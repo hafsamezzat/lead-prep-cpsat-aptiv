@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Layout Comparison Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#f9f9f7;--surface:#fff;--border:rgba(0,0,0,.12);
+  --text:#1a1a1a;--muted:#666;--radius:10px;
+  --blue:#378ADD;--green:#1D9E75;--amber:#EF9F27;--red:#E24B4A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+.header{background:var(--surface);border-bottom:.5px solid var(--border);padding:14px 24px;
+  position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.header h1{font-size:16px;font-weight:500;flex:1;min-width:0}
+.tab-btn{padding:7px 14px;border:.5px solid var(--border);border-radius:6px;
+  background:transparent;cursor:pointer;font-size:13px;color:var(--muted);white-space:nowrap}
+.tab-btn:hover,.tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.main{padding:24px;max-width:1500px;margin:0 auto}
+h2{font-size:18px;font-weight:500;margin:0 0 16px}
+h3{font-size:12px;font-weight:700;margin:18px 0 8px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px}
+.kpi-row{display:flex;flex-wrap:nowrap;gap:10px;margin-bottom:20px;
+  overflow-x:auto;padding-bottom:4px}
+.kpi-row::-webkit-scrollbar{height:4px}
+.kpi-row::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+.kpi-card{flex:1 0 148px;min-width:148px;max-width:220px;
+  background:var(--surface);border:.5px solid var(--border);
+  border-radius:var(--radius);padding:13px 15px}
+.kpi-card.kpi-good{border-left:3px solid var(--green)}
+.kpi-card.kpi-bad{border-left:3px solid var(--red)}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.kpi-val{font-size:21px;font-weight:500;line-height:1.2}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.data-table{width:auto;border-collapse:collapse;font-size:12px}
+.data-table.full-width{width:100%}
+.data-table th,.data-table td{padding:6px 10px;border-bottom:.5px solid var(--border);
+  text-align:left;white-space:nowrap}
+.data-table th{font-weight:700;color:var(--muted);font-size:11px;
+  text-transform:uppercase;letter-spacing:.3px}
+.data-table tr:hover td{background:var(--bg)}
+.row-label{font-weight:500;white-space:nowrap}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.badge-good{background:#EAF3DE;color:#27500A}
+.badge-bad{background:#FCEBEB;color:#791F1F}
+.badge-neu{background:#F1EFE8;color:#444}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+.fill-bar{background:#eee;border-radius:4px;height:7px;width:70px;display:inline-block;
+  vertical-align:middle;margin-right:5px}
+.fill-inner{height:7px;border-radius:4px}
+.bad{color:var(--red);font-weight:500}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+@media(max-width:700px){.chart-row{grid-template-columns:1fr}}
+.chart-box{background:var(--surface);border:.5px solid var(--border);
+  border-radius:var(--radius);padding:14px}
+.mlist{color:var(--muted);font-size:11px;max-width:500px;
+  white-space:normal;word-break:break-word}
+.layout-btn{padding:6px 13px;border:.5px solid var(--border);border-radius:6px;
+  background:transparent;cursor:pointer;font-size:12px;margin-bottom:4px}
+.layout-btn.active{background:#f0f0f0;font-weight:600}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏭 Layout Comparison Dashboard</h1>
+  <nav style="display:flex;gap:6px;flex-wrap:wrap"><button class="tab-btn" onclick="showTab(0)">Initial</button><button class="tab-btn" onclick="showTab(1)">Algorithme</button><button class="tab-btn" onclick="showTab(2)">Manuel</button><button class="tab-btn" onclick="showTab(99)">📊 Comparaison</button></nav>
+</div>
+<div class="main">
+<div class="tab-panel" id="tab-0">
+  <h2>Initial</h2>
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Coût hebdo</div>
+      <div class="kpi-val">3044.08</div>
+      <div class="kpi-sub">MAD·cm / semaine</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Projection annuelle</div>
+      <div class="kpi-val">158,292</div>
+      <div class="kpi-sub">MAD·cm / an</div>
+    </div>
+    <div class="kpi-card ">
+      <div class="kpi-label">Économie vs Initial</div>
+      <div class="kpi-val">+0</div>
+      <div class="kpi-sub">MAD·cm / an</div>
+    </div>
+    <div class="kpi-card ">
+      <div class="kpi-label">🏆 Score d'amélioration</div>
+      <div class="kpi-val">0.0%</div>
+      <div class="kpi-sub">Réduction coût de déplacement vs Initial</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Chevauchements</div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-sub">✅ Aucune superposition</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Profondeur max</div>
+      <div class="kpi-val">0.0</div>
+      <div class="kpi-sub">cm pénétration (pire paire)</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Machines hors zones</div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-sub">✅ Toutes placées</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Occupation par zone</h3>
+      <table class="data-table">
+        <thead><tr><th>Zone</th><th>Surface</th><th>Occupée</th><th>Taux</th><th>Dead space</th><th>Machines</th></tr></thead>
+        <tbody><tr>
+              <td><span class="dot" style="background:#E57373"></span>Z_REWORK</td>
+              <td>52 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#E57373"></div></div>0.0%</td>
+              <td>52.5 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#378ADD"></span>Z_A</td>
+              <td>71 m²</td>
+              <td>37.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:52.0%;background:#378ADD"></div></div>52.0%</td>
+              <td>34.2 m²</td>
+              <td>16</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#8D6E63"></span>Z_CuttingTubes</td>
+              <td>256 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#8D6E63"></div></div>0.0%</td>
+              <td>256.4 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#1D9E75"></span>Z_FREE</td>
+              <td>125 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#1D9E75"></div></div>0.0%</td>
+              <td>124.8 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#378ADD"></span>Z_B</td>
+              <td>244 m²</td>
+              <td>74.6 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:30.6%;background:#378ADD"></div></div>30.6%</td>
+              <td>169.0 m²</td>
+              <td>18</td>
+            </tr></tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Top paires coûteuses</h3>
+      <table class="data-table">
+        <thead><tr><th>Paire</th><th>Distance</th><th>Coût</th></tr></thead>
+        <tbody><tr><td>P16-B+Ref↔P05</td><td>3731cm</td><td>27.951</td></tr><tr><td>P16-B+Ref↔P07</td><td>3714cm</td><td>27.826</td></tr><tr><td>P16+Ref↔P05</td><td>3582cm</td><td>26.833</td></tr><tr><td>P16+Ref↔P07</td><td>3565cm</td><td>26.708</td></tr><tr><td>P16-B+Ref↔P08</td><td>3519cm</td><td>26.363</td></tr><tr><td>P16-B+Ref↔P14</td><td>3495cm</td><td>26.186</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Machines par zone</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Zone</th><th>Nb</th><th>Machines</th></tr></thead>
+    <tbody><tr><td><span class='dot' style='background:#378ADD'></span>Z_A</td><td>16</td><td class='mlist'>WORKMAN_A, P34, P10, P08, P07, P35, PRESSE_03, P12, P04, P05, P37, P01, P13, P09, P02, P14</td></tr><tr><td><span class='dot' style='background:#378ADD'></span>Z_B</td><td>18</td><td class='mlist'>KAPPA02, P57, BoB+KAPPA01, P16-B+Ref, P16+Ref, P17+Ref, P18+Ref, P19+Ref, CONTENTION, P11, P20, P25, P15-B, P15, P21, P22, P23, P24</td></tr></tbody>
+  </table>
+
+  <h3>✅ Chevauchements physiques</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Paire</th><th>Zone</th><th>Intrusion X</th><th>Intrusion Y</th><th>Profondeur</th></tr></thead>
+    <tbody><tr><td colspan='5' style='color:var(--green);text-align:center'>✅ Aucun chevauchement détecté</td></tr></tbody>
+  </table>
+</div>
+<div class="tab-panel" id="tab-1">
+  <h2>Algorithme</h2>
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Coût hebdo</div>
+      <div class="kpi-val">1406.27</div>
+      <div class="kpi-sub">MAD·cm / semaine</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Projection annuelle</div>
+      <div class="kpi-val">73,126</div>
+      <div class="kpi-sub">MAD·cm / an</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Économie vs Initial</div>
+      <div class="kpi-val">+85,166</div>
+      <div class="kpi-sub">MAD·cm / an</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">🏆 Score d'amélioration</div>
+      <div class="kpi-val">+53.8%</div>
+      <div class="kpi-sub">Réduction coût de déplacement vs Initial</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Chevauchements</div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-sub">✅ Aucune superposition</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Profondeur max</div>
+      <div class="kpi-val">0.0</div>
+      <div class="kpi-sub">cm pénétration (pire paire)</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Machines hors zones</div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-sub">✅ Toutes placées</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Occupation par zone</h3>
+      <table class="data-table">
+        <thead><tr><th>Zone</th><th>Surface</th><th>Occupée</th><th>Taux</th><th>Dead space</th><th>Machines</th></tr></thead>
+        <tbody><tr>
+              <td><span class="dot" style="background:#E57373"></span>Z_REWORK</td>
+              <td>52 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#E57373"></div></div>0.0%</td>
+              <td>52.5 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#378ADD"></span>Z_A</td>
+              <td>71 m²</td>
+              <td>2.5 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:3.5%;background:#378ADD"></div></div>3.5%</td>
+              <td>68.7 m²</td>
+              <td>2</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#8D6E63"></span>Z_CuttingTubes</td>
+              <td>238 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#8D6E63"></div></div>0.0%</td>
+              <td>238.3 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#1D9E75"></span>Z_FREE</td>
+              <td>150 m²</td>
+              <td>66.8 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:44.6%;background:#1D9E75"></div></div>44.6%</td>
+              <td>83.0 m²</td>
+              <td>29</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#378ADD"></span>Z_B</td>
+              <td>244 m²</td>
+              <td>42.3 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:17.4%;background:#378ADD"></div></div>17.4%</td>
+              <td>201.3 m²</td>
+              <td>3</td>
+            </tr></tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Top paires coûteuses</h3>
+      <table class="data-table">
+        <thead><tr><th>Paire</th><th>Distance</th><th>Coût</th></tr></thead>
+        <tbody><tr><td>BoB+KAPPA01↔P13</td><td>3330cm</td><td>20.847</td></tr><tr><td>BoB+KAPPA01↔P12</td><td>3140cm</td><td>19.657</td></tr><tr><td>BoB+KAPPA01↔P10</td><td>2910cm</td><td>18.218</td></tr><tr><td>KAPPA02↔P13</td><td>2880cm</td><td>18.030</td></tr><tr><td>P57↔P08</td><td>2647cm</td><td>17.514</td></tr><tr><td>KAPPA02↔P12</td><td>2690cm</td><td>16.841</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Machines par zone</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Zone</th><th>Nb</th><th>Machines</th></tr></thead>
+    <tbody><tr><td><span class='dot' style='background:#378ADD'></span>Z_A</td><td>2</td><td class='mlist'>WORKMAN_A, PRESSE_03</td></tr><tr><td><span class='dot' style='background:#1D9E75'></span>Z_FREE</td><td>29</td><td class='mlist'>P16-B+Ref, P16+Ref, P17+Ref, P18+Ref, P19+Ref, P34, P10, P08, P07, P35, P12, P04, P05, P37, P01, P13, P09, P02, P14, CONTENTION, P11, P20, P25, P15-B, P15, P21, P22, P23, P24</td></tr><tr><td><span class='dot' style='background:#378ADD'></span>Z_B</td><td>3</td><td class='mlist'>KAPPA02, P57, BoB+KAPPA01</td></tr></tbody>
+  </table>
+
+  <h3>✅ Chevauchements physiques</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Paire</th><th>Zone</th><th>Intrusion X</th><th>Intrusion Y</th><th>Profondeur</th></tr></thead>
+    <tbody><tr><td colspan='5' style='color:var(--green);text-align:center'>✅ Aucun chevauchement détecté</td></tr></tbody>
+  </table>
+</div>
+<div class="tab-panel" id="tab-2">
+  <h2>Manuel</h2>
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Coût hebdo</div>
+      <div class="kpi-val">1287.00</div>
+      <div class="kpi-sub">MAD·cm / semaine</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Projection annuelle</div>
+      <div class="kpi-val">66,924</div>
+      <div class="kpi-sub">MAD·cm / an</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Économie vs Initial</div>
+      <div class="kpi-val">+91,368</div>
+      <div class="kpi-sub">MAD·cm / an</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">🏆 Score d'amélioration</div>
+      <div class="kpi-val">+57.7%</div>
+      <div class="kpi-sub">Réduction coût de déplacement vs Initial</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Chevauchements</div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-sub">✅ Aucune superposition</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Profondeur max</div>
+      <div class="kpi-val">0.0</div>
+      <div class="kpi-sub">cm pénétration (pire paire)</div>
+    </div>
+    <div class="kpi-card kpi-good">
+      <div class="kpi-label">Machines hors zones</div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-sub">✅ Toutes placées</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Occupation par zone</h3>
+      <table class="data-table">
+        <thead><tr><th>Zone</th><th>Surface</th><th>Occupée</th><th>Taux</th><th>Dead space</th><th>Machines</th></tr></thead>
+        <tbody><tr>
+              <td><span class="dot" style="background:#E57373"></span>Z_REWORK</td>
+              <td>53 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#E57373"></div></div>0.0%</td>
+              <td>52.5 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#378ADD"></span>Z_A</td>
+              <td>90 m²</td>
+              <td>32.3 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:35.7%;background:#378ADD"></div></div>35.7%</td>
+              <td>58.1 m²</td>
+              <td>2</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#8D6E63"></span>Z_CuttingTubes</td>
+              <td>238 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#8D6E63"></div></div>0.0%</td>
+              <td>238.3 m²</td>
+              <td>0</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#1D9E75"></span>Z_FREE</td>
+              <td>150 m²</td>
+              <td>69.3 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:46.3%;background:#1D9E75"></div></div>46.3%</td>
+              <td>80.4 m²</td>
+              <td>31</td>
+            </tr><tr>
+              <td><span class="dot" style="background:#378ADD"></span>Z_B</td>
+              <td>244 m²</td>
+              <td>0.0 m²</td>
+              <td><div class="fill-bar"><div class="fill-inner" style="width:0.0%;background:#378ADD"></div></div>0.0%</td>
+              <td>243.6 m²</td>
+              <td>0</td>
+            </tr></tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Top paires coûteuses</h3>
+      <table class="data-table">
+        <thead><tr><th>Paire</th><th>Distance</th><th>Coût</th></tr></thead>
+        <tbody><tr><td>P57↔P02</td><td>2696cm</td><td>17.836</td></tr><tr><td>P57↔P14</td><td>2482cm</td><td>16.422</td></tr><tr><td>P57↔P07</td><td>2451cm</td><td>16.215</td></tr><tr><td>P57↔P01</td><td>2233cm</td><td>14.367</td></tr><tr><td>P57↔P12</td><td>2253cm</td><td>13.969</td></tr><tr><td>P57↔P13</td><td>2160cm</td><td>13.392</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Machines par zone</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Zone</th><th>Nb</th><th>Machines</th></tr></thead>
+    <tbody><tr><td><span class='dot' style='background:#378ADD'></span>Z_A</td><td>2</td><td class='mlist'>P57, BoB+KAPPA01</td></tr><tr><td><span class='dot' style='background:#1D9E75'></span>Z_FREE</td><td>31</td><td class='mlist'>WORKMAN_A, P16-B+Ref, P16+Ref, P17+Ref, P18+Ref, P19+Ref, P34, P10, P08, P07, P35, PRESSE_03, P12, P04, P05, P37, P01, P13, P09, P02, P14, CONTENTION, P11, P20, P25, P15-B, P15, P21, P22, P23, P24</td></tr></tbody>
+  </table>
+
+  <h3>✅ Chevauchements physiques</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Paire</th><th>Zone</th><th>Intrusion X</th><th>Intrusion Y</th><th>Profondeur</th></tr></thead>
+    <tbody><tr><td colspan='5' style='color:var(--green);text-align:center'>✅ Aucun chevauchement détecté</td></tr></tbody>
+  </table>
+</div>
+<div class="tab-panel" id="tab-99">
+  <h2>Comparaison des 3 Layouts</h2>
+  <div class="chart-row">
+    <div class="chart-box"><h3>Coût de walking (MAD·cm/sem)</h3>
+      <div style="position:relative;height:220px"><canvas id="chart-cost"></canvas></div></div>
+    <div class="chart-box"><h3>Taux de remplissage par zone (%)</h3>
+      <div style="position:relative;height:220px"><canvas id="chart-fill"></canvas></div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-box"><h3>Chevauchements physiques (paires)</h3>
+      <div style="position:relative;height:220px"><canvas id="chart-viol"></canvas></div></div>
+    <div class="chart-box"><h3>Vue radar — Performance globale</h3>
+      <div style="position:relative;height:220px"><canvas id="chart-radar"></canvas></div></div>
+  </div>
+  <h3>Tableau comparatif</h3>
+  <table class="data-table full-width">
+    <thead><tr><th>Indicateur</th><th>Initial</th><th>Algorithme</th><th>Manuel</th></tr></thead>
+    <tbody>
+<tr><td class='row-label'>Coût hebdo (MAD·cm)</td><td><span class='badge badge-neu'>3044.08 (0.0%)</span></td><td><span class='badge badge-good'>1406.27 (-53.8%)</span></td><td><span class='badge badge-good'>1287.00 (-57.7%)</span></td></tr>
+<tr><td class='row-label'>Coût annuel (MAD·cm)</td><td><span class='badge badge-neu'>158,292 (0.0%)</span></td><td><span class='badge badge-good'>73,126 (-53.8%)</span></td><td><span class='badge badge-good'>66,924 (-57.7%)</span></td></tr>
+<tr><td class='row-label'>🏆 Score d'amélioration</td><td><span class='badge badge-neu'>0.0%</span></td><td><span class='badge badge-good'>+53.8%</span></td><td><span class='badge badge-good'>+57.7%</span></td></tr>
+<tr><td class='row-label'>Chevauchements</td><td><span class='badge badge-neu'>0</span></td><td><span class='badge badge-neu'>0</span></td><td><span class='badge badge-neu'>0</span></td></tr>
+<tr><td class='row-label'>Profondeur max (cm)</td><td><span class='badge badge-neu'>0.0</span></td><td><span class='badge badge-neu'>0.0</span></td><td><span class='badge badge-neu'>0.0</span></td></tr>
+<tr><td class='row-label'>Machines hors zone</td><td><span class='badge badge-neu'>0</span></td><td><span class='badge badge-neu'>0</span></td><td><span class='badge badge-neu'>0</span></td></tr><tr><td class='row-label'>Fill rate Z_REWORK</td><td><span class='badge badge-neu'>0.0%</span></td><td><span class='badge badge-neu'>0.0%</span></td><td><span class='badge badge-neu'>0.0%</span></td></tr><tr><td class='row-label'>Fill rate Z_A</td><td><span class='badge badge-neu'>52.0%</span></td><td><span class='badge badge-bad'>3.5% (-93.3%)</span></td><td><span class='badge badge-bad'>35.7% (-31.3%)</span></td></tr><tr><td class='row-label'>Fill rate Z_CuttingTubes</td><td><span class='badge badge-neu'>0.0%</span></td><td><span class='badge badge-neu'>0.0%</span></td><td><span class='badge badge-neu'>0.0%</span></td></tr><tr><td class='row-label'>Fill rate Z_FREE</td><td><span class='badge badge-neu'>0.0%</span></td><td><span class='badge badge-neu'>44.6%</span></td><td><span class='badge badge-neu'>46.3%</span></td></tr><tr><td class='row-label'>Fill rate Z_B</td><td><span class='badge badge-neu'>30.6%</span></td><td><span class='badge badge-bad'>17.4% (-43.1%)</span></td><td><span class='badge badge-bad'>0.0% (-100.0%)</span></td></tr></tbody>
+  </table>
+  <h3>Vue plan — Toutes les machines</h3>
+  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+    <button class="layout-btn" onclick="showLayout(0)" style="border-left:4px solid #378ADD">Initial</button><button class="layout-btn" onclick="showLayout(1)" style="border-left:4px solid #1D9E75">Algorithme</button><button class="layout-btn" onclick="showLayout(2)" style="border-left:4px solid #EF9F27">Manuel</button>
+    <span style="font-size:11px;color:var(--muted);margin-left:6px">Survole une machine pour voir son nom &amp; famille</span>
+  </div>
+  <div id="canvas-legend" style="display:flex;flex-wrap:wrap;gap:5px 12px;margin-bottom:10px;font-size:11px"></div>
+  <div style="overflow-x:auto">
+    <canvas id="layout-canvas" width="1500" height="950"
+      style="border:0.5px solid var(--border);border-radius:8px;width:100%;min-width:700px;display:block"></canvas>
+  </div>
+  <div id="canvas-tooltip"
+    style="position:fixed;background:#1a1a1a;color:#fff;padding:5px 10px;border-radius:5px;
+           font-size:12px;pointer-events:none;display:none;z-index:9999;line-height:1.6"></div>
+</div></div>
+<script>
+
+const LABELS               = ["Initial", "Algorithme", "Manuel"];
+const LAYOUT_COLORS        = ["#378ADD", "#1D9E75", "#EF9F27"];
+const COSTS                = [3044.08, 1406.27, 1287.0];
+const OVERLAPS             = [0, 0, 0];
+const ZONE_NAMES           = ["Z_REWORK", "Z_A", "Z_CuttingTubes", "Z_FREE", "Z_B"];
+const FILL_DATA            = [[0.0, 52.0, 0.0, 0.0, 30.6], [0.0, 3.5, 0.0, 44.6, 17.4], [0.0, 35.7, 0.0, 46.3, 0.0]];
+const RADAR_DATA           = [{"label": "Initial", "data": [0.0, 0.0, 52.0, 0.0, 100.0, 100.0], "color": "#378ADD"}, {"label": "Algorithme", "data": [53.8, 44.6, 3.5, 0.0, 100.0, 100.0], "color": "#1D9E75"}, {"label": "Manuel", "data": [57.7, 46.3, 35.7, 0.0, 100.0, 97.1], "color": "#EF9F27"}];
+const ZONES_CANVAS_PER_LYT = [[{"name": "Z_REWORK", "x": 414.66, "y": 644.35, "w": 205.73999999999995, "h": 243.11, "color": "#E57373"}, {"name": "Z_A", "x": 631.76, "y": 687.07, "w": 342.89, "h": 197.95999999999992, "color": "#378ADD"}, {"name": "Z_CuttingTubes", "x": 368.42, "y": 85.88, "w": 606.23, "h": 402.88, "color": "#8D6E63"}, {"name": "Z_FREE", "x": 49.4, "y": 73.2, "w": 286.11, "h": 415.56, "color": "#1D9E75"}, {"name": "Z_B", "x": 1009.49, "y": 85.88, "w": 436.71000000000004, "h": 531.38, "color": "#378ADD"}], [{"name": "Z_REWORK", "x": 419.09, "y": 633.66, "w": 205.73000000000008, "h": 243.11, "color": "#E57373"}, {"name": "Z_A", "x": 636.19, "y": 676.38, "w": 342.89, "h": 197.96000000000004, "color": "#378ADD"}, {"name": "Z_CuttingTubes", "x": 53.82, "y": 62.52, "w": 546.3199999999999, "h": 415.55, "color": "#8D6E63"}, {"name": "Z_FREE", "x": 635.8, "y": 62.52, "w": 343.2800000000001, "h": 415.55, "color": "#1D9E75"}, {"name": "Z_B", "x": 1013.92, "y": 75.19, "w": 436.69999999999993, "h": 531.3800000000001, "color": "#378ADD"}], [{"name": "Z_REWORK", "x": 414.64, "y": 644.37, "w": 205.74, "h": 243.11, "color": "#E57373"}, {"name": "Z_A", "x": 620.38, "y": 644.37, "w": 354.25, "h": 243.11, "color": "#378ADD"}, {"name": "Z_CuttingTubes", "x": 49.38, "y": 73.23, "w": 546.3100000000001, "h": 415.54999999999995, "color": "#8D6E63"}, {"name": "Z_FREE", "x": 631.35, "y": 73.23, "w": 343.28, "h": 415.54999999999995, "color": "#1D9E75"}, {"name": "Z_B", "x": 1009.47, "y": 85.9, "w": 436.71000000000004, "h": 531.38, "color": "#378ADD"}]];
+const MACHINES_CV          = [{"label": "Initial", "machines": [{"name": "BoB_KAPPA02", "family": "INFRA", "zone": "Z_B", "cx": 1348.82, "cy": 137.98, "w": 46.63, "h": 104.19, "color": "#9E9E9E", "excluded": true}, {"name": "KAPPA02", "family": "KAPPA", "zone": "Z_B", "cx": 1354.3, "cy": 323.44, "w": 35.66, "h": 266.73, "color": "#1565C0", "excluded": false}, {"name": "BoB_P57", "family": "INFRA", "zone": "Z_B", "cx": 1284.34, "cy": 112.82, "w": 46.63, "h": 52.1, "color": "#9E9E9E", "excluded": true}, {"name": "P57", "family": "KOMAX", "zone": "Z_B", "cx": 1282.97, "cy": 309.05, "w": 49.38, "h": 340.36, "color": "#1565C0", "excluded": false}, {"name": "BOX_9", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 506.95, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_8", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 563.19, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_7", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 619.42, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_6", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 675.65, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_5", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 731.89, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_4", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 788.12, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_3", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 844.36, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_2", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 900.59, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_1", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 956.82, "cy": 182.61, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 437.14, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 491.1, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 540.47, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 589.85, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 639.22, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_07", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 688.6, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 737.98, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 787.35, "cy": 464.44, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_02", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 862.19, "cy": 471.39, "w": 30.17, "h": 34.73, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_01", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 903.33, "cy": 471.39, "w": 30.17, "h": 34.73, "color": "#9E9E9E", "excluded": true}, {"name": "PC_cuttingtubes", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 946.26, "cy": 386.01, "w": 14.54, "h": 170.49, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 498.05, "cy": 418.83, "w": 25.79, "h": 32.65, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 544.57, "cy": 403.75, "w": 25.79, "h": 32.65, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 590.16, "cy": 402.74, "w": 25.79, "h": 32.65, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 628.15, "cy": 406.0, "w": 31.55, "h": 39.94, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 685.75, "cy": 411.1, "w": 37.03, "h": 46.89, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 745.03, "cy": 402.98, "w": 21.95, "h": 27.78, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 786.38, "cy": 401.3, "w": 37.03, "h": 46.89, "color": "#9E9E9E", "excluded": true}, {"name": "BOXDEL", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 383.78, "cy": 341.15, "w": 30.72, "h": 295.21, "color": "#9E9E9E", "excluded": true}, {"name": "BOX", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 437.14, "cy": 249.12, "w": 35.66, "h": 326.47, "color": "#9E9E9E", "excluded": true}, {"name": "METZNER_10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 502.84, "cy": 340.8, "w": 27.43, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM30_04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 546.73, "cy": 334.9, "w": 21.95, "h": 62.52, "color": "#9E9E9E", "excluded": true}, {"name": "METZNER_05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 589.73, "cy": 340.98, "w": 25.65, "h": 74.67, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 632.04, "cy": 340.8, "w": 20.57, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 671.81, "cy": 340.8, "w": 20.57, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_07", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 711.59, "cy": 339.14, "w": 20.57, "h": 71.39, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 751.36, "cy": 336.93, "w": 20.57, "h": 68.88, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 792.24, "cy": 338.37, "w": 22.77, "h": 69.46, "color": "#9E9E9E", "excluded": true}, {"name": "HSGM_02", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 853.29, "cy": 376.25, "w": 28.53, "h": 145.87, "color": "#9E9E9E", "excluded": true}, {"name": "HSGM_01", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 904.16, "cy": 376.25, "w": 28.53, "h": 145.87, "color": "#9E9E9E", "excluded": true}, {"name": "mangera", "family": "INFRA", "zone": "Z_B", "cx": 1144.29, "cy": 359.27, "w": 36.76, "h": 25.7, "color": "#9E9E9E", "excluded": true}, {"name": "Bubble_Test", "family": "INFRA", "zone": "Z_B", "cx": 1118.35, "cy": 362.57, "w": 32.86, "h": 19.1, "color": "#9E9E9E", "excluded": true}, {"name": "WORKMAN_A", "family": "WORKSTATION", "zone": "Z_A", "cx": 880.52, "cy": 872.88, "w": 34.29, "h": 24.31, "color": "#FF9800", "excluded": false}, {"name": "BoB+KAPPA01", "family": "KAPPA", "zone": "Z_B", "cx": 1428.37, "cy": 385.95, "w": 35.66, "h": 391.76, "color": "#1565C0", "excluded": false}, {"name": "P16-B+Ref", "family": "ELOPAR", "zone": "Z_B", "cx": 1138.69, "cy": 111.93, "w": 67.48, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P16+Ref", "family": "ELOPAR", "zone": "Z_B", "cx": 1138.89, "cy": 164.03, "w": 67.88, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P17+Ref", "family": "ELOPAR", "zone": "Z_B", "cx": 1139.09, "cy": 216.12, "w": 68.28, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P18+Ref", "family": "ELOPAR", "zone": "Z_B", "cx": 1139.29, "cy": 268.22, "w": 68.68, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P19+Ref", "family": "ELOPAR", "zone": "Z_B", "cx": 1139.49, "cy": 320.31, "w": 69.08, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "poutre", "family": "OBSTACLE", "zone": "Z_A", "cx": 855.15, "cy": 693.84, "w": 26.11, "h": 33.05, "color": "#8B4513", "excluded": true}, {"name": "P34", "family": "BT722", "zone": "Z_A", "cx": 954.77, "cy": 857.59, "w": 39.78, "h": 54.87, "color": "#37474F", "excluded": false}, {"name": "P10", "family": "HANKE", "zone": "Z_A", "cx": 817.04, "cy": 859.85, "w": 43.34, "h": 50.36, "color": "#00695C", "excluded": false}, {"name": "P08", "family": "MECAL", "zone": "Z_A", "cx": 764.16, "cy": 859.85, "w": 46.63, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P07", "family": "MECAL", "zone": "Z_A", "cx": 710.59, "cy": 859.85, "w": 49.38, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P35", "family": "BT722", "zone": "Z_A", "cx": 952.98, "cy": 788.91, "w": 43.34, "h": 53.83, "color": "#37474F", "excluded": false}, {"name": "PRESSE_03", "family": "PRESSE", "zone": "Z_A", "cx": 879.84, "cy": 788.46, "w": 32.92, "h": 47.82, "color": "#9C27B0", "excluded": false}, {"name": "P12", "family": "HANKE", "zone": "Z_A", "cx": 816.77, "cy": 790.83, "w": 43.89, "h": 55.57, "color": "#00695C", "excluded": false}, {"name": "P04", "family": "MECAL", "zone": "Z_A", "cx": 765.54, "cy": 790.78, "w": 43.89, "h": 55.57, "color": "#1976D2", "excluded": false}, {"name": "PC-A", "family": "INFRA", "zone": "Z_A", "cx": 712.84, "cy": 796.26, "w": 19.2, "h": 41.73, "color": "#9E9E9E", "excluded": true}, {"name": "P05", "family": "MECAL", "zone": "Z_A", "cx": 653.71, "cy": 793.63, "w": 43.89, "h": 55.57, "color": "#1976D2", "excluded": false}, {"name": "P37", "family": "BT752", "zone": "Z_A", "cx": 949.28, "cy": 712.25, "w": 50.75, "h": 50.36, "color": "#37474F", "excluded": false}, {"name": "P01", "family": "SEAL", "zone": "Z_A", "cx": 888.07, "cy": 713.31, "w": 49.38, "h": 52.49, "color": "#AD1457", "excluded": false}, {"name": "P13", "family": "HANKE", "zone": "Z_A", "cx": 816.77, "cy": 712.25, "w": 43.89, "h": 50.36, "color": "#00695C", "excluded": false}, {"name": "P09", "family": "MECAL", "zone": "Z_A", "cx": 765.54, "cy": 712.38, "w": 43.89, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P02", "family": "MECAL", "zone": "Z_A", "cx": 712.84, "cy": 712.25, "w": 43.89, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P14", "family": "MECAL", "zone": "Z_A", "cx": 653.71, "cy": 711.8, "w": 43.89, "h": 51.26, "color": "#1976D2", "excluded": false}, {"name": "SMED02_P75", "family": "INFRA", "zone": "Z_B", "cx": 1317.26, "cy": 301.06, "w": 19.2, "h": 15.98, "color": "#9E9E9E", "excluded": true}, {"name": "SMED_P57", "family": "INFRA", "zone": "Z_B", "cx": 1248.68, "cy": 414.61, "w": 19.2, "h": 15.98, "color": "#9E9E9E", "excluded": true}, {"name": "BoB_KAPPA01", "family": "INFRA", "zone": "Z_B", "cx": 1422.88, "cy": 137.98, "w": 46.63, "h": 104.19, "color": "#9E9E9E", "excluded": true}, {"name": "REWORK_03", "family": "INFRA", "zone": "Z_A", "cx": 656.45, "cy": 859.85, "w": 49.38, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "PC_B", "family": "INFRA", "zone": "Z_B", "cx": 1328.43, "cy": 559.75, "w": 13.72, "h": 27.65, "color": "#9E9E9E", "excluded": true}, {"name": "CONTENTION", "family": "CONTENTION", "zone": "Z_B", "cx": 1019.78, "cy": 534.95, "w": 20.57, "h": 42.37, "color": "#E91E63", "excluded": false}, {"name": "P11", "family": "HANKE", "zone": "Z_B", "cx": 1125.38, "cy": 410.61, "w": 30.17, "h": 60.43, "color": "#00695C", "excluded": false}, {"name": "P20", "family": "DINEFER", "zone": "Z_B", "cx": 1076.96, "cy": 355.79, "w": 52.12, "h": 32.65, "color": "#4527A0", "excluded": false}, {"name": "P25", "family": "DINEFER", "zone": "Z_B", "cx": 1074.92, "cy": 424.5, "w": 52.12, "h": 32.65, "color": "#4527A0", "excluded": false}, {"name": "P15-B", "family": "PASSE_FIL", "zone": "Z_B", "cx": 1025.95, "cy": 430.41, "w": 32.92, "h": 20.84, "color": "#558B2F", "excluded": false}, {"name": "P15", "family": "PASSE_FIL", "zone": "Z_B", "cx": 1025.95, "cy": 361.7, "w": 32.92, "h": 20.84, "color": "#558B2F", "excluded": false}, {"name": "P21", "family": "RAYCHEM", "zone": "Z_B", "cx": 1034.18, "cy": 256.06, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P22", "family": "RAYCHEM", "zone": "Z_B", "cx": 1034.18, "cy": 203.97, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P23", "family": "RAYCHEM", "zone": "Z_B", "cx": 1034.18, "cy": 151.87, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P24", "family": "RAYCHEM", "zone": "Z_B", "cx": 1034.18, "cy": 99.77, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}], "color": "#378ADD"}, {"label": "Algorithme", "machines": [{"name": "BoB_KAPPA02", "family": "INFRA", "zone": "Z_B", "cx": 1353.24, "cy": 127.29, "w": 46.63, "h": 104.19, "color": "#9E9E9E", "excluded": true}, {"name": "KAPPA02", "family": "KAPPA", "zone": "Z_B", "cx": 1358.73, "cy": 312.75, "w": 35.66, "h": 266.73, "color": "#1565C0", "excluded": false}, {"name": "BoB_P57", "family": "INFRA", "zone": "Z_B", "cx": 1288.77, "cy": 102.13, "w": 46.63, "h": 52.1, "color": "#9E9E9E", "excluded": true}, {"name": "P57", "family": "KOMAX", "zone": "Z_B", "cx": 1287.39, "cy": 298.36, "w": 49.38, "h": 340.36, "color": "#1565C0", "excluded": false}, {"name": "Dereeling_tbl10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 73.71, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 129.95, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 186.18, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 242.41, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 298.65, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_07", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 339.27, "cy": 453.76, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tb11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 382.56, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 438.8, "cy": 452.89, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_9", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 132.44, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_8", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 188.67, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_7", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 244.91, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_6", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 301.14, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_5", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 357.37, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_4", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 413.61, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_3", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 469.84, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_2", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 526.08, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_1", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 582.31, "cy": 159.24, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_02", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 487.67, "cy": 448.02, "w": 30.17, "h": 34.73, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_01", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 528.82, "cy": 448.02, "w": 30.17, "h": 34.73, "color": "#9E9E9E", "excluded": true}, {"name": "PC_cuttingtubes", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 571.75, "cy": 362.65, "w": 14.54, "h": 170.49, "color": "#9E9E9E", "excluded": true}, {"name": "BOX", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 71.65, "cy": 225.75, "w": 35.66, "h": 326.47, "color": "#9E9E9E", "excluded": true}, {"name": "METZNER_10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 128.32, "cy": 317.44, "w": 27.43, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM30_04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 172.21, "cy": 311.53, "w": 21.95, "h": 62.52, "color": "#9E9E9E", "excluded": true}, {"name": "METZNER_05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 215.21, "cy": 317.61, "w": 25.65, "h": 74.67, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 257.52, "cy": 317.44, "w": 20.57, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 297.3, "cy": 317.44, "w": 20.57, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_07", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 337.07, "cy": 315.78, "w": 20.57, "h": 71.39, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 376.85, "cy": 313.56, "w": 20.57, "h": 68.88, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 417.72, "cy": 315.01, "w": 22.77, "h": 69.46, "color": "#9E9E9E", "excluded": true}, {"name": "HSGM_02", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 478.77, "cy": 352.88, "w": 28.53, "h": 145.87, "color": "#9E9E9E", "excluded": true}, {"name": "HSGM_01", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 529.64, "cy": 352.88, "w": 28.53, "h": 145.87, "color": "#9E9E9E", "excluded": true}, {"name": "mangera", "family": "INFRA", "zone": "Z_B", "cx": 1148.71, "cy": 348.58, "w": 36.76, "h": 25.7, "color": "#9E9E9E", "excluded": true}, {"name": "Bubble_Test", "family": "INFRA", "zone": "Z_B", "cx": 1122.77, "cy": 351.88, "w": 32.86, "h": 19.1, "color": "#9E9E9E", "excluded": true}, {"name": "WORKMAN_A", "family": "WORKSTATION", "zone": "Z_A", "cx": 884.95, "cy": 862.19, "w": 34.29, "h": 24.31, "color": "#FF9800", "excluded": false}, {"name": "BoB+KAPPA01", "family": "KAPPA", "zone": "Z_B", "cx": 1432.79, "cy": 375.26, "w": 35.66, "h": 391.76, "color": "#1565C0", "excluded": false}, {"name": "BoB_KAPPA01", "family": "INFRA", "zone": "Z_B", "cx": 1427.31, "cy": 127.29, "w": 46.63, "h": 104.19, "color": "#9E9E9E", "excluded": true}, {"name": "SMED02_P75", "family": "INFRA", "zone": "Z_B", "cx": 1321.68, "cy": 290.37, "w": 19.2, "h": 15.98, "color": "#9E9E9E", "excluded": true}, {"name": "SMED_P57", "family": "INFRA", "zone": "Z_B", "cx": 1253.11, "cy": 403.92, "w": 19.2, "h": 15.98, "color": "#9E9E9E", "excluded": true}, {"name": "P16-B+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 803.73, "cy": 449.18, "w": 67.48, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P16+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 803.74, "cy": 393.62, "w": 67.88, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P17+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 803.74, "cy": 338.05, "w": 68.28, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P18+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 803.73, "cy": 282.48, "w": 68.68, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P19+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 803.74, "cy": 226.91, "w": 69.08, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "poutre", "family": "OBSTACLE", "zone": "Z_A", "cx": 859.58, "cy": 683.15, "w": 26.11, "h": 33.05, "color": "#8B4513", "excluded": true}, {"name": "P34", "family": "BT722", "zone": "Z_FREE", "cx": 949.12, "cy": 122.72, "w": 39.78, "h": 54.87, "color": "#37474F", "excluded": false}, {"name": "P10", "family": "HANKE", "zone": "Z_FREE", "cx": 658.35, "cy": 344.99, "w": 43.34, "h": 50.36, "color": "#00695C", "excluded": false}, {"name": "P08", "family": "MECAL", "zone": "Z_FREE", "cx": 661.09, "cy": 424.87, "w": 46.63, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P07", "family": "MECAL", "zone": "Z_FREE", "cx": 803.74, "cy": 94.93, "w": 49.38, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P35", "family": "BT722", "zone": "Z_FREE", "cx": 949.12, "cy": 442.24, "w": 43.34, "h": 53.83, "color": "#37474F", "excluded": false}, {"name": "PRESSE_03", "family": "PRESSE", "zone": "Z_A", "cx": 884.27, "cy": 777.77, "w": 32.92, "h": 47.82, "color": "#9C27B0", "excluded": false}, {"name": "P12", "family": "HANKE", "zone": "Z_FREE", "cx": 658.35, "cy": 265.11, "w": 43.89, "h": 55.57, "color": "#00695C", "excluded": false}, {"name": "P04", "family": "MECAL", "zone": "Z_FREE", "cx": 880.54, "cy": 442.24, "w": 43.89, "h": 55.57, "color": "#1976D2", "excluded": false}, {"name": "PC-A", "family": "INFRA", "zone": "Z_A", "cx": 717.27, "cy": 785.57, "w": 19.2, "h": 41.73, "color": "#9E9E9E", "excluded": true}, {"name": "P05", "family": "MECAL", "zone": "Z_FREE", "cx": 880.54, "cy": 362.36, "w": 43.89, "h": 55.57, "color": "#1976D2", "excluded": false}, {"name": "P37", "family": "BT752", "zone": "Z_FREE", "cx": 949.12, "cy": 362.36, "w": 50.75, "h": 50.36, "color": "#37474F", "excluded": false}, {"name": "P01", "family": "SEAL", "zone": "Z_FREE", "cx": 872.31, "cy": 115.77, "w": 49.38, "h": 52.49, "color": "#AD1457", "excluded": false}, {"name": "P13", "family": "HANKE", "zone": "Z_FREE", "cx": 737.9, "cy": 98.41, "w": 43.89, "h": 50.36, "color": "#00695C", "excluded": false}, {"name": "P09", "family": "MECAL", "zone": "Z_FREE", "cx": 726.93, "cy": 424.87, "w": 43.89, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P02", "family": "MECAL", "zone": "Z_FREE", "cx": 932.66, "cy": 202.6, "w": 43.89, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P14", "family": "MECAL", "zone": "Z_FREE", "cx": 921.69, "cy": 282.48, "w": 43.89, "h": 51.26, "color": "#1976D2", "excluded": false}, {"name": "REWORK_03", "family": "INFRA", "zone": "Z_REWORK", "cx": 466.09, "cy": 849.16, "w": 49.38, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "PC_B", "family": "INFRA", "zone": "Z_B", "cx": 1332.86, "cy": 549.06, "w": 13.72, "h": 27.65, "color": "#9E9E9E", "excluded": true}, {"name": "CONTENTION", "family": "CONTENTION", "zone": "Z_FREE", "cx": 869.57, "cy": 285.95, "w": 20.57, "h": 42.37, "color": "#E91E63", "excluded": false}, {"name": "P11", "family": "HANKE", "zone": "Z_FREE", "cx": 875.06, "cy": 199.12, "w": 30.17, "h": 60.43, "color": "#00695C", "excluded": false}, {"name": "P20", "family": "DINEFER", "zone": "Z_FREE", "cx": 669.32, "cy": 195.65, "w": 52.12, "h": 32.65, "color": "#4527A0", "excluded": false}, {"name": "P25", "family": "DINEFER", "zone": "Z_FREE", "cx": 669.32, "cy": 136.61, "w": 52.12, "h": 32.65, "color": "#4527A0", "excluded": false}, {"name": "P15-B", "family": "PASSE_FIL", "zone": "Z_FREE", "cx": 732.41, "cy": 206.07, "w": 32.92, "h": 20.84, "color": "#558B2F", "excluded": false}, {"name": "P15", "family": "PASSE_FIL", "zone": "Z_FREE", "cx": 732.41, "cy": 160.92, "w": 32.92, "h": 20.84, "color": "#558B2F", "excluded": false}, {"name": "P21", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 724.18, "cy": 358.89, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P22", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 724.18, "cy": 306.79, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P23", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 803.73, "cy": 160.92, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P24", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 724.18, "cy": 254.69, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}], "color": "#1D9E75"}, {"label": "Manuel", "machines": [{"name": "BoB_P57", "family": "INFRA", "zone": "Z_A", "cx": 954.06, "cy": 841.99, "w": 41.15, "h": 59.04, "color": "#9E9E9E", "excluded": true}, {"name": "P57", "family": "KOMAX", "zone": "Z_A", "cx": 799.07, "cy": 840.25, "w": 268.83, "h": 62.52, "color": "#1565C0", "excluded": false}, {"name": "Dereeling_tbl10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 69.26, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 125.5, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 181.73, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 237.97, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 294.2, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_07", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 334.82, "cy": 464.47, "w": 35.66, "h": 48.62, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tb11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 378.11, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "Dereeling_tbl06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 434.35, "cy": 463.6, "w": 39.78, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_9", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 127.99, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_8", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 184.22, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_7", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 240.46, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_6", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 296.69, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_5", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 352.93, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_4", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 409.16, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_3", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 465.39, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_2", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 521.63, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_1", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 577.86, "cy": 169.95, "w": 35.66, "h": 193.45, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_02", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 483.22, "cy": 458.74, "w": 30.17, "h": 34.73, "color": "#9E9E9E", "excluded": true}, {"name": "BOX_01", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 524.37, "cy": 458.74, "w": 30.17, "h": 34.73, "color": "#9E9E9E", "excluded": true}, {"name": "PC_cuttingtubes", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 567.3, "cy": 373.36, "w": 14.54, "h": 170.49, "color": "#9E9E9E", "excluded": true}, {"name": "BOX", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 67.21, "cy": 236.46, "w": 35.66, "h": 326.47, "color": "#9E9E9E", "excluded": true}, {"name": "METZNER_10", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 123.88, "cy": 328.15, "w": 27.43, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM30_04", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 167.77, "cy": 322.24, "w": 21.95, "h": 62.52, "color": "#9E9E9E", "excluded": true}, {"name": "METZNER_05", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 210.76, "cy": 328.32, "w": 25.65, "h": 74.67, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_12", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 253.08, "cy": 328.15, "w": 20.57, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_08", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 292.85, "cy": 328.15, "w": 20.57, "h": 74.32, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_07", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 332.63, "cy": 326.49, "w": 20.57, "h": 71.39, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_11", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 372.4, "cy": 324.27, "w": 20.57, "h": 68.88, "color": "#9E9E9E", "excluded": true}, {"name": "SM15_06", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 413.27, "cy": 325.72, "w": 22.77, "h": 69.46, "color": "#9E9E9E", "excluded": true}, {"name": "HSGM_02", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 474.32, "cy": 363.6, "w": 28.53, "h": 145.87, "color": "#9E9E9E", "excluded": true}, {"name": "HSGM_01", "family": "INFRA", "zone": "Z_CuttingTubes", "cx": 525.19, "cy": 363.6, "w": 28.53, "h": 145.87, "color": "#9E9E9E", "excluded": true}, {"name": "pagoda", "family": "INFRA", "zone": "Z_A", "cx": 629.98, "cy": 725.99, "w": 19.2, "h": 163.23, "color": "#9E9E9E", "excluded": true}, {"name": "BoB+KAPPA01", "family": "KAPPA", "zone": "Z_A", "cx": 819.92, "cy": 748.56, "w": 309.42, "h": 45.15, "color": "#1565C0", "excluded": false}, {"name": "SMED02_P75", "family": "INFRA", "zone": "Z_A", "cx": 802.09, "cy": 879.5, "w": 19.2, "h": 15.98, "color": "#9E9E9E", "excluded": true}, {"name": "SMED_P57", "family": "INFRA", "zone": "Z_A", "cx": 731.61, "cy": 801.01, "w": 19.2, "h": 15.98, "color": "#9E9E9E", "excluded": true}, {"name": "BoB_KAPPA01", "family": "INFRA", "zone": "Z_A", "cx": 796.55, "cy": 673.89, "w": 82.29, "h": 59.04, "color": "#9E9E9E", "excluded": true}, {"name": "PC_B", "family": "INFRA", "zone": "Z_A", "cx": 649.86, "cy": 878.8, "w": 21.84, "h": 17.37, "color": "#9E9E9E", "excluded": true}, {"name": "mangera", "family": "INFRA", "zone": "Z_FREE", "cx": 733.79, "cy": 86.08, "w": 36.76, "h": 25.7, "color": "#9E9E9E", "excluded": true}, {"name": "Bubble_Test", "family": "INFRA", "zone": "Z_FREE", "cx": 707.85, "cy": 89.38, "w": 32.86, "h": 19.1, "color": "#9E9E9E", "excluded": true}, {"name": "WORKMAN_A", "family": "WORKSTATION", "zone": "Z_FREE", "cx": 965.03, "cy": 240.16, "w": 19.2, "h": 43.41, "color": "#FF9800", "excluded": false}, {"name": "P16-B+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 805.11, "cy": 462.73, "w": 67.48, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P16+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 805.31, "cy": 410.63, "w": 67.88, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P17+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 805.31, "cy": 358.54, "w": 68.28, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P18+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 805.31, "cy": 306.44, "w": 68.68, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "P19+Ref", "family": "ELOPAR", "zone": "Z_FREE", "cx": 805.11, "cy": 254.35, "w": 69.08, "h": 52.1, "color": "#2E7D32", "excluded": false}, {"name": "poutre", "family": "OBSTACLE", "zone": "Z_A", "cx": 855.13, "cy": 693.86, "w": 26.11, "h": 33.05, "color": "#8B4513", "excluded": true}, {"name": "P34", "family": "BT722", "zone": "Z_FREE", "cx": 954.74, "cy": 383.2, "w": 39.78, "h": 54.87, "color": "#37474F", "excluded": false}, {"name": "P10", "family": "HANKE", "zone": "Z_FREE", "cx": 653.02, "cy": 319.47, "w": 43.34, "h": 50.36, "color": "#00695C", "excluded": false}, {"name": "P08", "family": "MECAL", "zone": "Z_FREE", "cx": 654.67, "cy": 394.14, "w": 46.63, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P07", "family": "MECAL", "zone": "Z_FREE", "cx": 885.48, "cy": 98.41, "w": 49.38, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P35", "family": "BT722", "zone": "Z_FREE", "cx": 952.96, "cy": 461.86, "w": 43.34, "h": 53.83, "color": "#37474F", "excluded": false}, {"name": "PRESSE_03", "family": "PRESSE", "zone": "Z_FREE", "cx": 647.81, "cy": 464.87, "w": 32.92, "h": 47.82, "color": "#9C27B0", "excluded": false}, {"name": "P12", "family": "HANKE", "zone": "Z_FREE", "cx": 653.3, "cy": 242.19, "w": 43.89, "h": 55.57, "color": "#00695C", "excluded": false}, {"name": "P04", "family": "MECAL", "zone": "Z_FREE", "cx": 882.74, "cy": 460.99, "w": 43.89, "h": 55.57, "color": "#1976D2", "excluded": false}, {"name": "PC-A", "family": "INFRA", "zone": "Z_FREE", "cx": 724.75, "cy": 476.62, "w": 32.96, "h": 24.31, "color": "#9E9E9E", "excluded": true}, {"name": "P05", "family": "MECAL", "zone": "Z_FREE", "cx": 882.74, "cy": 382.85, "w": 43.89, "h": 55.57, "color": "#1976D2", "excluded": false}, {"name": "P37", "family": "BT752", "zone": "Z_FREE", "cx": 949.26, "cy": 306.27, "w": 50.75, "h": 50.36, "color": "#37474F", "excluded": false}, {"name": "P01", "family": "SEAL", "zone": "Z_FREE", "cx": 885.48, "cy": 174.14, "w": 49.38, "h": 52.49, "color": "#AD1457", "excluded": false}, {"name": "P13", "family": "HANKE", "zone": "Z_FREE", "cx": 805.76, "cy": 98.41, "w": 43.89, "h": 50.36, "color": "#00695C", "excluded": false}, {"name": "P09", "family": "MECAL", "zone": "Z_FREE", "cx": 730.22, "cy": 395.87, "w": 43.89, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P02", "family": "MECAL", "zone": "Z_FREE", "cx": 952.69, "cy": 98.41, "w": 43.89, "h": 50.36, "color": "#1976D2", "excluded": false}, {"name": "P14", "family": "MECAL", "zone": "Z_FREE", "cx": 952.69, "cy": 172.63, "w": 43.89, "h": 51.26, "color": "#1976D2", "excluded": false}, {"name": "REWORK_03", "family": "INFRA", "zone": "Z_REWORK", "cx": 461.64, "cy": 859.87, "w": 49.38, "h": 50.36, "color": "#9E9E9E", "excluded": true}, {"name": "CONTENTION", "family": "CONTENTION", "zone": "Z_FREE", "cx": 884.8, "cy": 308.34, "w": 20.57, "h": 42.37, "color": "#E91E63", "excluded": false}, {"name": "P11", "family": "HANKE", "zone": "Z_FREE", "cx": 884.66, "cy": 245.5, "w": 47.73, "h": 38.2, "color": "#00695C", "excluded": false}, {"name": "P20", "family": "DINEFER", "zone": "Z_FREE", "cx": 657.41, "cy": 164.91, "w": 52.12, "h": 32.65, "color": "#4527A0", "excluded": false}, {"name": "P25", "family": "DINEFER", "zone": "Z_FREE", "cx": 657.41, "cy": 89.55, "w": 52.12, "h": 32.65, "color": "#4527A0", "excluded": false}, {"name": "P15-B", "family": "PASSE_FIL", "zone": "Z_FREE", "cx": 735.71, "cy": 179.68, "w": 32.92, "h": 20.84, "color": "#558B2F", "excluded": false}, {"name": "P15", "family": "PASSE_FIL", "zone": "Z_FREE", "cx": 735.71, "cy": 134.53, "w": 32.92, "h": 20.84, "color": "#558B2F", "excluded": false}, {"name": "P21", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 727.48, "cy": 332.49, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P22", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 727.48, "cy": 280.39, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P23", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 803.02, "cy": 161.79, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}, {"name": "P24", "family": "RAYCHEM", "zone": "Z_FREE", "cx": 727.48, "cy": 228.3, "w": 49.38, "h": 27.78, "color": "#EF6C00", "excluded": false}], "color": "#EF9F27"}];
+const FAM_COLORS           = {"_ZONE": "transparent", "OBSTACLE": "#8B4513", "INFRA": "#9E9E9E", "WORKSTATION": "#FF9800", "PRESSE": "#9C27B0", "CONTENTION": "#E91E63", "KAPPA": "#1565C0", "KOMAX": "#1565C0", "ELOPAR": "#2E7D32", "RAYCHEM": "#EF6C00", "DINEFER": "#4527A0", "HANKE": "#00695C", "PASSE_FIL": "#558B2F", "MECAL": "#1976D2", "SEAL": "#AD1457", "BT722": "#37474F", "BT752": "#37474F", "UNKNOWN": "#E91E63"};
+const CANVAS_W             = 1500;
+const CANVAS_H             = 950;
+
+
+let chartsBuilt = false;
+function showTab(idx) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  (idx===99 ? document.getElementById('tab-99') : document.getElementById('tab-'+idx))
+    ?.classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  if (btns[idx===99 ? LABELS.length : idx]) btns[idx===99 ? LABELS.length : idx].classList.add('active');
+  if (idx===99 && !chartsBuilt) { buildCharts(); chartsBuilt=true; showLayout(0); buildLegend(); }
+}
+showTab(0);
+
+const hex2rgb = h => {
+  return `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+};
+
+function buildCharts() {
+  new Chart(document.getElementById('chart-cost'), {
+    type:'bar',
+    data:{labels:LABELS,datasets:[{label:'Coût hebdo',data:COSTS,
+      backgroundColor:LAYOUT_COLORS.map(c=>`rgba(${hex2rgb(c)},0.8)`),
+      borderColor:LAYOUT_COLORS,borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'MAD·cm/sem'}}}}
+  });
+  new Chart(document.getElementById('chart-fill'), {
+    type:'bar',
+    data:{labels:ZONE_NAMES,datasets:LABELS.map((l,i)=>({      label:l,data:FILL_DATA[i],
+      backgroundColor:`rgba(${hex2rgb(LAYOUT_COLORS[i])},0.7)`,
+      borderColor:LAYOUT_COLORS[i],borderWidth:1})) },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},
+      scales:{y:{beginAtZero:true,max:100,title:{display:true,text:'%'}}}}
+  });
+  new Chart(document.getElementById('chart-viol'), {
+    type:'bar',
+    data:{labels:LABELS,datasets:[{label:'Chevauchements',data:OVERLAPS,
+      backgroundColor:OVERLAPS.map(v=>v===0?'rgba(29,158,117,0.8)':'rgba(226,75,74,0.8)'),
+      borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{stepSize:1},title:{display:true,text:'Paires'}}}}
+  });
+  new Chart(document.getElementById('chart-radar'), {
+    type:'radar',
+    data:{
+      labels:['Coût↓','Fill Z_FREE','Fill Z_A','Fill Z_CuttingTubes','Sans chevauch.','Machines'],
+      datasets:RADAR_DATA.map((d,i)=>({
+        label:d.label,data:d.data,
+        backgroundColor:`rgba(${hex2rgb(d.color)},0.15)`,
+        borderColor:d.color,borderWidth:2,pointRadius:3}))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},
+      scales:{r:{beginAtZero:true,max:100,ticks:{display:false}}}}
+  });
+}
+
+function buildLegend() {
+  const el = document.getElementById('canvas-legend');
+  if (!el) return;
+  const seen = new Set();
+  if (MACHINES_CV[0]) MACHINES_CV[0].machines.forEach(m => {
+    if (!seen.has(m.family) && m.color!=='transparent') {
+      seen.add(m.family);
+      el.innerHTML += `<div class="legend-item">
+        <div class="legend-swatch" style="background:${m.color};border:1px solid #ccc"></div>
+        <span>${m.family}</span></div>`;
+    }
+  });
+  [['Z_REWORK','#E57373'],['Z_A','#378ADD'],['Z_CuttingTubes','#8D6E63'],
+   ['Z_FREE','#1D9E75'],['Z_B','#378ADD']].forEach(([n,c]) => {
+    el.innerHTML += `<div class="legend-item">
+      <div class="legend-swatch" style="background:${c}33;border:1.5px solid ${c}"></div>
+      <span>${n}</span></div>`;
+  });
+}
+
+let activeLayout = 0;
+function showLayout(idx) {
+  activeLayout = idx;
+  document.querySelectorAll('.layout-btn').forEach((b,i) => b.classList.toggle('active',i===idx));
+  drawLayout(idx);
+}
+
+function drawLayout(idx) {
+  const canvas = document.getElementById('layout-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  const zones = ZONES_CANVAS_PER_LYT[idx] || ZONES_CANVAS_PER_LYT[0];
+  zones.forEach(z => {
+    ctx.fillStyle   = z.color+'1A';
+    ctx.strokeStyle = z.color;
+    ctx.lineWidth   = 2;
+    ctx.beginPath(); ctx.roundRect(z.x,z.y,z.w,z.h,6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = z.color;
+    ctx.font = 'bold 14px system-ui';
+    ctx.fillText(z.name, z.x+8, z.y+20);
+  });
+
+  const layout = MACHINES_CV[idx];
+  if (!layout) return;
+  layout.machines.forEach(m => {
+    if (m.color==='transparent') return;
+    const x=m.cx-m.w/2, y=m.cy-m.h/2;
+    ctx.fillStyle   = m.color+(m.excluded?'55':'BB');
+    ctx.strokeStyle = m.color;
+    ctx.lineWidth   = m.excluded ? 0.5 : 1.5;
+    ctx.fillRect(x,y,m.w,m.h); ctx.strokeRect(x,y,m.w,m.h);
+
+    const name = m.name;
+    const minDim = Math.min(m.w,m.h);
+    if (m.w>=28 && m.h>=10) {
+      let fs = Math.min(12, Math.max(7, Math.floor(minDim*0.42)));
+      ctx.font = `${m.excluded?'normal':'600'} ${fs}px system-ui`;
+      ctx.fillStyle = '#111';
+      ctx.textBaseline = 'middle';
+      const tw = ctx.measureText(name).width;
+      if (tw <= m.w-4) {
+        ctx.fillText(name, m.cx-tw/2, m.cy);
+      } else if (m.h > m.w && tw <= m.h-4) {
+        ctx.save(); ctx.translate(m.cx,m.cy); ctx.rotate(-Math.PI/2);
+        ctx.fillText(name,-tw/2,0); ctx.restore();
+      } else {
+        let t=name;
+        while(t.length>3 && ctx.measureText(t+'…').width > m.w-4) t=t.slice(0,-1);
+        const twr=ctx.measureText(t+'…').width;
+        ctx.fillText(t+'…',m.cx-twr/2,m.cy);
+      }
+    }
+  });
+}
+
+const canvas = document.getElementById('layout-canvas');
+if (canvas) {
+  canvas.addEventListener('mousemove', e => {
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(CANVAS_W/rect.width);
+    const my=(e.clientY-rect.top )*(CANVAS_H/rect.height);
+    const tip=document.getElementById('canvas-tooltip');
+    let found=null;
+    const layout=MACHINES_CV[activeLayout];
+    if (layout) layout.machines.forEach(m=>{
+      if(Math.abs(mx-m.cx)<m.w/2+2 && Math.abs(my-m.cy)<m.h/2+2) found=m;
+    });
+    if (found) {
+      tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px';
+      tip.style.top=(e.clientY-10)+'px';
+      tip.innerHTML=`<strong>${found.name}</strong> <span style="color:#aaa">${found.family}</span><br>
+        <span style="color:#888;font-size:11px">Zone: ${found.zone}</span>`;
+    } else tip.style.display='none';
+  });
+  canvas.addEventListener('mouseleave',()=>{
+    document.getElementById('canvas-tooltip').style.display='none';
+  });
+}
+</script>
+</body>
+</html>

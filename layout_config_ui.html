@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layout Optimizer — Config Interface</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f0f;
+  --surface: #181818;
+  --surface2: #202020;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8e8e4;
+  --muted: #888880;
+  --hint: #555550;
+  --accent: #C8F060;
+  --accent2: #60C8F0;
+  --warn: #F0A040;
+  --danger: #F05060;
+  --success: #40C880;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+/* ── LAYOUT ── */
+.shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.brand-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.brand-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.nav-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-left: 2px solid transparent;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.nav-step:hover { background: var(--surface2); color: var(--text); }
+.nav-step.active { border-left-color: var(--accent); color: var(--accent); background: rgba(200,240,96,0.05); }
+.nav-step.done { color: var(--success); }
+.nav-step.done .step-num { background: var(--success); color: var(--bg); }
+.step-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  font-family: var(--mono);
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.nav-step.active .step-num { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--border);
+}
+.footer-hint { font-size: 11px; color: var(--hint); line-height: 1.6; }
+
+.main { flex: 1; padding: 40px 48px; max-width: 860px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom: 32px; }
+.page-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.page-title { font-size: 24px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.page-sub { font-size: 13px; color: var(--muted); max-width: 580px; line-height: 1.6; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.card-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hint);
+  margin-bottom: 16px;
+}
+.card-label span { color: var(--muted); }
+
+/* ── FORM FIELDS ── */
+.field-grid { display: grid; gap: 14px; }
+.fg-2 { grid-template-columns: 1fr 1fr; }
+.fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+.fg-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.fg-1 { grid-template-columns: 1fr; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field > label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.field input, .field select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 8px 11px;
+  width: 100%;
+  transition: border-color 0.15s;
+  appearance: none;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(200,240,96,0.08);
+}
+.field .hint { font-size: 10.5px; color: var(--hint); line-height: 1.5; }
+.field-preview {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent2);
+  background: rgba(96,200,240,0.07);
+  border: 1px solid rgba(96,200,240,0.15);
+  border-radius: 5px;
+  padding: 6px 10px;
+  margin-top: 4px;
+}
+
+/* ── ZONE CARDS ── */
+.zone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.zone-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.zone-block.za { border-left: 3px solid #E24B4A; }
+.zone-block.zf { border-left: 3px solid #40C880; }
+.zone-block.zb { border-left: 3px solid var(--accent2); }
+.zone-block.pt { border-left: 3px solid var(--warn); }
+.zone-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500;
+  margin-bottom: 12px; color: var(--text);
+}
+.zone-dot { width: 8px; height: 8px; border-radius: 50%; }
+.zone-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.zone-mini-grid label { font-size: 10px; color: var(--hint); }
+.zone-mini-grid input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  padding: 5px 8px;
+  width: 100%;
+}
+.zone-mini-grid input:focus { outline: none; border-color: var(--accent); }
+
+/* ── TOGGLE ── */
+.toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.toggle-wrap:last-child { border-bottom: none; }
+.toggle-info .tl { font-size: 13px; color: var(--text); }
+.toggle-info .ts { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.toggle-btn {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  cursor: pointer; position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.toggle-btn.on { background: var(--accent); border-color: var(--accent); }
+.toggle-btn::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  top: 2px; left: 2px;
+  transition: left 0.2s, background 0.2s;
+}
+.toggle-btn.on::after { left: 20px; background: var(--bg); }
+
+/* ── TABLES ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.data-table th {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hint);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.data-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.data-table input, .data-table select {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 7px;
+  width: 100%;
+}
+.data-table input:focus, .data-table select:focus {
+  outline: none; border-color: var(--accent);
+}
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.tag-machine { background: rgba(96,200,240,0.12); color: var(--accent2); border: 1px solid rgba(96,200,240,0.2); }
+.tag-ignore { background: rgba(136,136,128,0.12); color: var(--muted); border: 1px solid var(--border2); }
+.tag-obstacle { background: rgba(240,160,64,0.12); color: var(--warn); border: 1px solid rgba(240,160,64,0.2); }
+
+/* ── REL TABLE ── */
+.rel-scroll { overflow-x: auto; }
+.rel-table { border-collapse: collapse; font-size: 11px; min-width: 640px; }
+.rel-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--hint);
+  padding: 6px 5px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  height: 70px;
+  vertical-align: bottom;
+}
+.rel-table th:first-child { writing-mode: horizontal-tb; height: auto; text-align: left; padding-left: 12px; min-width: 90px; }
+.rel-table td {
+  padding: 3px 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.rel-table td:first-child {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: left;
+  padding-left: 12px;
+  background: var(--surface2);
+  white-space: nowrap;
+  border-right: 1px solid var(--border2);
+}
+.rel-table select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 2px 2px;
+  width: 38px;
+  cursor: pointer;
+  text-align: center;
+}
+.rel-table select:focus { outline: 1px solid var(--accent); border-radius: 3px; }
+.cell-0 { background: transparent; }
+.cell-low { background: rgba(64,200,128,0.07); }
+.cell-med { background: rgba(64,200,128,0.15); }
+.cell-high { background: rgba(96,200,240,0.15); }
+.cell-must { background: rgba(200,240,96,0.18); }
+.cell-neg { background: rgba(240,80,96,0.12); }
+.cell-diag { background: var(--surface2); }
+
+/* ── SUMMARY STATS ── */
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.stat-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.stat-box .sl { font-size: 10px; color: var(--hint); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.stat-box .sv { font-size: 22px; font-weight: 500; color: var(--text); font-family: var(--mono); }
+.stat-box .ss { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.stat-box.accent { border-color: rgba(200,240,96,0.3); }
+.stat-box.accent .sv { color: var(--accent); }
+
+/* ── OUTPUT CODE ── */
+.code-wrap {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.code-header-left { display: flex; align-items: center; gap: 8px; }
+.code-dots { display: flex; gap: 5px; }
+.code-dot { width: 11px; height: 11px; border-radius: 50%; }
+.code-pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: #bbb;
+  padding: 16px;
+  max-height: 320px;
+  overflow-y: auto;
+  white-space: pre;
+  overflow-x: auto;
+}
+.code-filename { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+}
+.btn:hover { background: var(--surface2); border-color: var(--border2); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 500;
+}
+.btn-primary:hover { background: #d4f570; border-color: #d4f570; }
+.btn-download {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 500;
+  width: 100%;
+  justify-content: center;
+  padding: 13px;
+  font-size: 14px;
+  border-radius: var(--radius-lg);
+}
+.btn-download:hover { background: #d4f570; }
+.nav-row { display: flex; gap: 10px; margin-top: 24px; align-items: center; }
+.nav-row .spacer { flex: 1; }
+.icon { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* ── ADD ROW ── */
+.add-row-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+  transition: all 0.15s;
+}
+.add-row-btn:hover { border-color: var(--accent); color: var(--accent); }
+.del-btn {
+  background: none; border: none;
+  color: var(--hint); cursor: pointer;
+  font-size: 15px; padding: 2px 5px;
+  border-radius: 4px; line-height: 1;
+  transition: color 0.1s;
+}
+.del-btn:hover { color: var(--danger); }
+
+/* ── MISC ── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.inline-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.badge-accent { background: rgba(200,240,96,0.15); color: var(--accent); }
+.badge-warn { background: rgba(240,160,64,0.15); color: var(--warn); }
+.badge-info { background: rgba(96,200,240,0.15); color: var(--accent2); }
+.section-sep { font-family: var(--mono); font-size: 10px; color: var(--hint); margin: 20px 0 12px; letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+.section-sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+select option { background: #1e1e1e; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 24px 20px; }
+  .fg-2, .fg-3, .fg-4 { grid-template-columns: 1fr 1fr; }
+  .zone-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-tag">CP-SAT v4</div>
+    <div class="brand-name">Layout Optimizer<br>Config Interface</div>
+  </div>
+  <div class="nav-step active" id="nav0" onclick="goTo(0)"><span class="step-num" id="sn0">1</span>Files & wages</div>
+  <div class="nav-step" id="nav1" onclick="goTo(1)"><span class="step-num" id="sn1">2</span>Zone coords</div>
+  <div class="nav-step" id="nav2" onclick="goTo(2)"><span class="step-num" id="sn2">3</span>Solver params</div>
+  <div class="nav-step" id="nav3" onclick="goTo(3)"><span class="step-num" id="sn3">4</span>Machines</div>
+  <div class="nav-step" id="nav4" onclick="goTo(4)"><span class="step-num" id="sn4">5</span>Production rates</div>
+  <div class="nav-step" id="nav5" onclick="goTo(5)"><span class="step-num" id="sn5">6</span>Relations (REL)</div>
+  <div class="nav-step" id="nav6" onclick="goTo(6)"><span class="step-num" id="sn6">7</span>Generate script</div>
+  <div class="sidebar-footer">
+    <div class="footer-hint">Generates a complete, runnable<br><code style="font-size:10px;color:var(--accent)">CP_SAT_3ZONE_v4.py</code><br>with all your settings baked in.</div>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+<!-- ════════════════ PAGE 0 — FILES ════════════════ -->
+<div class="page active" id="page0">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 1 of 7</div>
+    <div class="page-title">Files & wages</div>
+    <div class="page-sub">Set the input Excel filename, output CSV filename, and the operator wage used to compute walking costs.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Input / output files</div>
+    <div class="field-grid fg-1" style="gap:12px">
+      <div class="field">
+        <label>Input Excel file (AutoCAD export — must be in the same folder as the script)</label>
+        <input type="text" id="csv_input" value="RECOVER_102_RECENT.xlsx" placeholder="RECOVER_102_RECENT.xlsx">
+        <span class="hint">Exported from AutoCAD via the EXPORT_BLOCKS LISP script. Include the .xlsx extension.</span>
+      </div>
+      <div class="field">
+        <label>Output CSV file (fed into AutoCAD via APPLYLAYOUT_v2.lsp)</label>
+        <input type="text" id="csv_output" value="optimized_layout.csv" placeholder="optimized_layout.csv">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Operator wage <span>— used to compute weekly walking cost (MAD·cm / week)</span></div>
+    <div class="field-grid fg-3">
+      <div class="field">
+        <label>Wage per hour (MAD / hr)</label>
+        <input type="number" id="wage_hr" value="17.92" step="0.01" min="0" oninput="updateWage()">
+      </div>
+      <div class="field">
+        <label>Working hours per day</label>
+        <input type="number" id="hours_day" value="7.67" step="0.01" min="0" oninput="updateWage()">
+      </div>
+      <div class="field">
+        <label>Working days per week</label>
+        <input type="number" id="days_week" value="5.75" step="0.25" min="0" oninput="updateWage()">
+      </div>
+    </div>
+    <div class="field-preview" id="wage_preview">Weekly wage = 17.92 × 7.67 × 5.75 = 790.34 MAD / week</div>
+  </div>
+
+  <div class="nav-row">
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="goTo(1)">Next — Zone coords
+      <svg class="icon"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE 1 — ZONES ════════════════ -->
+<div class="page" id="page1">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 2 of 7</div>
+    <div class="page-title">Zone coordinates</div>
+    <div class="page-sub">Copy Xmin / Xmax / Ymin / Ymax from AutoCAD (click zone rectangle → Properties panel). All values in centimetres.</div>
+  </div>
+
+  <div class="zone-grid" style="grid-template-columns:1fr;gap:12px">
+    <div class="zone-block za">
+      <div class="zone-header"><span class="zone-dot" style="background:#E24B4A"></span>Zone A — left red area (MECAL, HANKE)</div>
+      <div class="zone-mini-grid">
+        <div class="field"><label>Xmin</label><input id="za_xmin" value="2139.2153"></div>
+        <div class="field"><label>Xmax</label><input id="za_xmax" value="3389.2153"></div>
+        <div class="field"><label>Ymin</label><input id="za_ymin" value="615.8415"></div>
+        <div class="field"><label>Ymax</label><input id="za_ymax" value="1185.8415"></div>
+      </div>
+    </div>
+    <div class="zone-block zf">
+      <div class="zone-header"><span class="zone-dot" style="background:#40C880"></span>Zone FREE — green middle area (high-interaction machines)</div>
+      <div class="zone-mini-grid">
+        <div class="field"><label>Xmin</label><input id="zf_xmin" value="2137.799"></div>
+        <div class="field"><label>Xmax</label><input id="zf_xmax" value="3389.2153"></div>
+        <div class="field"><label>Ymin</label><input id="zf_ymin" value="1756.8415"></div>
+        <div class="field"><label>Ymax</label><input id="zf_ymax" value="2953.3415"></div>
+      </div>
+    </div>
+    <div class="zone-block zb">
+      <div class="zone-header"><span class="zone-dot" style="background:#60C8F0"></span>Zone B — right blue area (to evacuate)</div>
+      <div class="zone-mini-grid">
+        <div class="field"><label>Xmin</label><input id="zb_xmin" value="3516.2153"></div>
+        <div class="field"><label>Xmax</label><input id="zb_xmax" value="5108.2153"></div>
+        <div class="field"><label>Ymin</label><input id="zb_ymin" value="1386.8415"></div>
+        <div class="field"><label>Ymax</label><input id="zb_ymax" value="2916.8415"></div>
+      </div>
+    </div>
+    <div class="zone-block pt">
+      <div class="zone-header"><span class="zone-dot" style="background:#F0A040"></span>Poutre (structural beam) — hard obstacle, 65 cm gap enforced from all machines</div>
+      <div class="zone-mini-grid">
+        <div class="field"><label>Xmin</label><input id="p_xmin" value="2905.9809"></div>
+        <div class="field"><label>Xmax</label><input id="p_xmax" value="3001.1555"></div>
+        <div class="field"><label>Ymin</label><input id="p_ymin" value="1118.7542"></div>
+        <div class="field"><label>Ymax</label><input id="p_ymax" value="1213.9288"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" onclick="goTo(0)"><svg class="icon"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="goTo(2)">Next — Solver params <svg class="icon"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE 2 — SOLVER ════════════════ -->
+<div class="page" id="page2">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 3 of 7</div>
+    <div class="page-title">Solver parameters</div>
+    <div class="page-sub">Controls how the CP-SAT solver runs. Higher time = better solution. Reduce "Z_FREE targets" if the solver reports INFEASIBLE.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Timing & resolution</div>
+    <div class="field-grid fg-3">
+      <div class="field">
+        <label>Time limit (seconds)</label>
+        <input type="number" id="time_limit" value="21600" min="60" oninput="updateTimeBadge()">
+        <span class="hint" id="time_badge">= 6.0 hours</span>
+      </div>
+      <div class="field">
+        <label>Grid resolution (cm)</label>
+        <input type="number" id="grid" value="10" min="5" max="50">
+        <span class="hint">10 cm standard. Lower = more precise but slower.</span>
+      </div>
+      <div class="field">
+        <label>Min gap between machines (cm)</label>
+        <input type="number" id="min_gap" value="65" min="0">
+        <span class="hint">Also applied between every machine and the poutre.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Zone assignment</div>
+    <div class="field-grid fg-2">
+      <div class="field">
+        <label>Machines forced into Z_FREE <span class="inline-badge badge-info">top N by interaction score</span></label>
+        <input type="number" id="top_n_zfree" value="10" min="1" max="32">
+        <span class="hint">If the solver returns INFEASIBLE, lower this number by 1 and retry.</span>
+      </div>
+      <div class="field">
+        <label>Z_B evacuation penalty (per machine)</label>
+        <input type="number" id="zb_penalty" value="8000" min="0" step="500">
+        <span class="hint">Higher value = solver tries harder to move machines out of Zone B.</span>
+      </div>
+    </div>
+    <div class="field-grid fg-2" style="margin-top:14px">
+      <div class="field">
+        <label>Parallel search workers</label>
+        <input type="number" id="workers" value="8" min="1" max="32">
+        <span class="hint">Set to number of CPU cores on your machine.</span>
+      </div>
+      <div class="field">
+        <label>Local search polish passes (after CP-SAT)</label>
+        <input type="number" id="ls_passes" value="40" min="0" max="200">
+        <span class="hint">Set to 0 to skip local search. 40 is a good default.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Options</div>
+    <div class="toggle-wrap">
+      <div class="toggle-info"><div class="tl">Show solver progress in terminal</div><div class="ts">Prints CP-SAT search log in real time — useful for monitoring long runs</div></div>
+      <button class="toggle-btn" id="tog_log" onclick="tog('tog_log')"></button>
+    </div>
+    <div class="toggle-wrap">
+      <div class="toggle-info"><div class="tl">Allow ELOPAR machines to touch (0 cm gap)</div><div class="ts">ELOPAR machines form a column — they can be placed flush against each other</div></div>
+      <button class="toggle-btn on" id="tog_elopar_touch" onclick="tog('tog_elopar_touch')"></button>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" onclick="goTo(1)"><svg class="icon"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="goTo(3)">Next — Machines <svg class="icon"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE 3 — FAMILY MAP ════════════════ -->
+<div class="page" id="page3">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 4 of 7</div>
+    <div class="page-title">Machine families</div>
+    <div class="page-sub">Every block name from your AutoCAD Excel export must be listed here. Names not in this table are skipped with a warning. Add rows for any new blocks.</div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="data-table" id="familyTable">
+      <thead><tr>
+        <th style="width:170px">Block name (AutoCAD)</th>
+        <th>Family / role</th>
+        <th style="width:100px">Type</th>
+        <th style="width:36px"></th>
+      </tr></thead>
+      <tbody id="familyBody"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addFamilyRow()">
+      <svg class="icon" style="width:13px;height:13px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add block
+    </button>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" onclick="goTo(2)"><svg class="icon"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="goTo(4)">Next — Production rates <svg class="icon"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE 4 — PRODUCTION ════════════════ -->
+<div class="page" id="page4">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 5 of 7</div>
+    <div class="page-title">Production rates</div>
+    <div class="page-sub">Wire throughput (fils/hr) per machine. Used to weight which machine families should be physically close. Set 0 for inactive or offline machines.</div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="data-table" id="prodTable">
+      <thead><tr>
+        <th>Machine</th>
+        <th>Family</th>
+        <th style="width:100px">Fils / hr</th>
+        <th style="width:60px">Active</th>
+        <th style="width:36px"></th>
+      </tr></thead>
+      <tbody id="prodBody"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addProdRow()">
+      <svg class="icon" style="width:13px;height:13px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add machine
+    </button>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" onclick="goTo(3)"><svg class="icon"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="goTo(5)">Next — Relations <svg class="icon"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE 5 — REL ════════════════ -->
+<div class="page" id="page5">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 6 of 7</div>
+    <div class="page-title">Relationship chart (REL)</div>
+    <div class="page-sub">How important is it for each pair of machine families to be physically close?
+      <span class="inline-badge badge-accent">7 = must be adjacent</span>
+      <span class="inline-badge badge-info">5–6 = very desirable</span>
+      <span class="inline-badge" style="background:rgba(64,200,128,0.12);color:#40C880">1–3 = nice to have</span>
+      <span class="inline-badge" style="background:rgba(136,136,128,0.12);color:var(--muted)">0 = neutral</span>
+    </div>
+  </div>
+
+  <div class="card" style="padding:14px;overflow:hidden">
+    <div class="rel-scroll">
+      <table class="rel-table" id="relTable"></table>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" onclick="goTo(4)"><svg class="icon"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="goTo(6); buildGenerate()">Generate script <svg class="icon"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE 6 — GENERATE ════════════════ -->
+<div class="page" id="page6">
+  <div class="page-header">
+    <div class="page-eyebrow">Step 7 of 7</div>
+    <div class="page-title">Generate Python script</div>
+    <div class="page-sub">Your settings are compiled into a complete, runnable <code style="font-family:var(--mono);font-size:12px;color:var(--accent)">CP_SAT_3ZONE_v4.py</code>. Download it, place it in the same folder as your Excel file, then run <code style="font-family:var(--mono);font-size:12px;color:var(--accent)">python CP_SAT_3ZONE_v4.py</code>.</div>
+  </div>
+
+  <div class="stat-row" id="summaryStats"></div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-header-left">
+        <div class="code-dots">
+          <div class="code-dot" style="background:#E24B4A"></div>
+          <div class="code-dot" style="background:#F0A040"></div>
+          <div class="code-dot" style="background:#40C880"></div>
+        </div>
+        <span class="code-filename">CP_SAT_3ZONE_v4.py</span>
+      </div>
+      <button class="btn" style="font-size:11px;padding:5px 12px" onclick="copyCode()">
+        <svg class="icon" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+    <pre class="code-pre" id="codeOut"></pre>
+  </div>
+
+  <button class="btn btn-download" onclick="downloadScript()">
+    <svg class="icon" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Download CP_SAT_3ZONE_v4.py
+  </button>
+
+  <div class="nav-row">
+    <button class="btn" onclick="goTo(5)"><svg class="icon"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const FAMILIES = ["ELOPAR","KOMAX","KAPPA","BT722","BT752","HANKE","MECAL","DINEFER","PASSE_FIL","RAYCHEM","SEAL","CONTENTION"];
+
+const DEFAULT_FM = [
+  ["P19+Ref","ELOPAR"],["P18+Ref","ELOPAR"],["P17+Ref","ELOPAR"],
+  ["P16+Ref","ELOPAR"],["P16-B+Ref","ELOPAR"],
+  ["ToTaL_P57","KOMAX"],
+  ["BoB+KAPPA02","KAPPA"],["BoB+KAPPA01","KAPPA"],
+  ["P34","BT722"],["P35","BT722"],["P37","BT752"],
+  ["P10","HANKE"],["P12","HANKE"],["P13","HANKE"],["P11","HANKE"],
+  ["P08","MECAL"],["P07","MECAL"],["P04","MECAL"],
+  ["P05","MECAL"],["P09","MECAL"],["P02","MECAL"],["P14","MECAL"],
+  ["P20","DINEFER"],["P25","DINEFER"],
+  ["P15-B","PASSE_FIL"],["P15","PASSE_FIL"],
+  ["P21","RAYCHEM"],["P22","RAYCHEM"],["P23","RAYCHEM"],["P24","RAYCHEM"],
+  ["P01","SEAL"],
+  ["CONTENTION","CONTENTION"],
+  ["Z_FREE","IGNORE"],["Z_A","IGNORE"],["Z_B","IGNORE"],
+  ["WORKMAN_A","IGNORE"],["REWORK_03","IGNORE"],["PRESSE_03","IGNORE"],
+  ["PC-A","IGNORE"],["PC_B","IGNORE"],
+  ["mangera","IGNORE"],["Bubble_Test","IGNORE"],["BoB_KAPPA01","IGNORE"],
+  ["SMED02_P75","IGNORE"],["SMED_P57","IGNORE"],
+  ["METZNER_10","IGNORE"],["SM30_04","IGNORE"],["METZNER_05","IGNORE"],
+  ["SM15_12","IGNORE"],["SM15_08","IGNORE"],["SM15_07","IGNORE"],
+  ["SM15_11","IGNORE"],["SM15_06","IGNORE"],
+  ["HSGM_02","IGNORE"],["HSGM_01","IGNORE"],
+  ["poutre","OBSTACLE"],
+];
+
+const DEFAULT_PROD = [
+  ["BoB+KAPPA01","KAPPA",328.98,true],["BoB+KAPPA02","KAPPA",0,true],
+  ["ToTaL_P57","KOMAX",604.44,true],
+  ["P19+Ref","ELOPAR",313.32,true],["P18+Ref","ELOPAR",283.94,true],
+  ["P17+Ref","ELOPAR",365.54,true],["P16+Ref","ELOPAR",350,true],["P16-B+Ref","ELOPAR",0,true],
+  ["P21","RAYCHEM",339.43,true],["P22","RAYCHEM",352.48,true],
+  ["P23","RAYCHEM",156.66,true],["P24","RAYCHEM",0,true],
+  ["P20","DINEFER",189.29,true],["P25","DINEFER",0,true],
+  ["P10","HANKE",84.86,true],["P12","HANKE",169.71,true],
+  ["P13","HANKE",189.29,true],["P11","HANKE",104.44,true],
+  ["P15-B","PASSE_FIL",110.97,true],["P15","PASSE_FIL",0,true],
+  ["CONTENTION","CONTENTION",2500,true],
+  ["P08","MECAL",169.71,true],["P07","MECAL",22.85,true],
+  ["P04","MECAL",104.44,true],["P05","MECAL",104.44,true],
+  ["P09","MECAL",283.94,true],["P02","MECAL",365.54,true],["P14","MECAL",0,true],
+  ["P01","SEAL",832.25,true],
+  ["P34","BT722",535.25,true],["P35","BT722",391.64,true],
+  ["P37","BT752",800,true],
+];
+
+const DEFAULT_REL = {
+  "KAPPA-KOMAX":1,"KAPPA-ELOPAR":1,"KAPPA-RAYCHEM":1,"KAPPA-DINEFER":1,
+  "KAPPA-HANKE":7,"KAPPA-PASSE_FIL":5,"KAPPA-CONTENTION":1,"KAPPA-MECAL":1,
+  "KAPPA-SEAL":5,"KAPPA-BT722":0,"KAPPA-BT752":0,
+  "KOMAX-ELOPAR":1,"KOMAX-RAYCHEM":1,"KOMAX-DINEFER":1,"KOMAX-HANKE":6,
+  "KOMAX-PASSE_FIL":0,"KOMAX-CONTENTION":1,"KOMAX-MECAL":6,"KOMAX-SEAL":6,
+  "KOMAX-BT722":0,"KOMAX-BT752":0,
+  "ELOPAR-RAYCHEM":7,"ELOPAR-DINEFER":1,"ELOPAR-HANKE":6,"ELOPAR-PASSE_FIL":1,
+  "ELOPAR-CONTENTION":6,"ELOPAR-MECAL":7,"ELOPAR-SEAL":3,"ELOPAR-BT722":1,"ELOPAR-BT752":1,
+  "RAYCHEM-DINEFER":5,"RAYCHEM-HANKE":3,"RAYCHEM-PASSE_FIL":6,"RAYCHEM-CONTENTION":7,
+  "RAYCHEM-MECAL":6,"RAYCHEM-SEAL":1,"RAYCHEM-BT722":0,"RAYCHEM-BT752":0,
+  "DINEFER-HANKE":6,"DINEFER-PASSE_FIL":6,"DINEFER-CONTENTION":3,
+  "DINEFER-MECAL":1,"DINEFER-SEAL":3,"DINEFER-BT722":0,"DINEFER-BT752":0,
+  "HANKE-PASSE_FIL":7,"HANKE-CONTENTION":1,"HANKE-MECAL":3,
+  "HANKE-SEAL":7,"HANKE-BT722":1,"HANKE-BT752":1,
+  "PASSE_FIL-CONTENTION":3,"PASSE_FIL-MECAL":1,"PASSE_FIL-SEAL":3,
+  "PASSE_FIL-BT722":1,"PASSE_FIL-BT752":1,
+  "CONTENTION-MECAL":1,"CONTENTION-SEAL":1,"CONTENTION-BT722":7,"CONTENTION-BT752":7,
+  "MECAL-SEAL":7,"MECAL-BT722":1,"MECAL-BT752":1,
+  "SEAL-BT722":1,"SEAL-BT752":1,
+  "BT722-BT752":3
+};
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+let cur = 0;
+const toggles = {};
+
+function goTo(n) {
+  document.getElementById('page'+cur).classList.remove('active');
+  document.getElementById('nav'+cur).classList.remove('active');
+  document.getElementById('nav'+cur).classList.add('done');
+  document.getElementById('sn'+cur).textContent = '✓';
+  cur = n;
+  document.getElementById('page'+n).classList.add('active');
+  document.getElementById('nav'+n).classList.add('active');
+  document.getElementById('nav'+n).classList.remove('done');
+  document.getElementById('sn'+n).textContent = n+1;
+  window.scrollTo(0,0);
+}
+
+function tog(id) {
+  toggles[id] = !toggles[id];
+  document.getElementById(id).classList.toggle('on', toggles[id]);
+}
+function togVal(id) { return toggles[id] ? 'True' : 'False'; }
+function togOn(id) { return !!toggles[id]; }
+
+// init toggles
+toggles['tog_log'] = false;
+toggles['tog_elopar_touch'] = true;
+
+// ─────────────────────────────────────────────
+// PAGE 0 — WAGE
+// ─────────────────────────────────────────────
+function updateWage() {
+  const w = parseFloat(document.getElementById('wage_hr').value)||0;
+  const h = parseFloat(document.getElementById('hours_day').value)||0;
+  const d = parseFloat(document.getElementById('days_week').value)||0;
+  const ww = (w*h*d).toFixed(2);
+  document.getElementById('wage_preview').textContent =
+    `Weekly wage = ${w} × ${h} × ${d} = ${ww} MAD / week`;
+}
+updateWage();
+
+// ─────────────────────────────────────────────
+// PAGE 2 — SOLVER
+// ─────────────────────────────────────────────
+function updateTimeBadge() {
+  const s = parseInt(document.getElementById('time_limit').value)||0;
+  const h = (s/3600).toFixed(1);
+  const m = Math.round(s/60);
+  document.getElementById('time_badge').textContent = s >= 3600 ? `= ${h} hours` : `= ${m} minutes`;
+}
+updateTimeBadge();
+
+// ─────────────────────────────────────────────
+// PAGE 3 — FAMILY TABLE
+// ─────────────────────────────────────────────
+function famTypeTag(v) {
+  if(v==='OBSTACLE') return `<span class="tag tag-obstacle">obstacle</span>`;
+  if(v==='IGNORE')   return `<span class="tag tag-ignore">fixed/ignore</span>`;
+  return `<span class="tag tag-machine">machine</span>`;
+}
+function famOptions(sel) {
+  return FAMILIES.map(f=>`<option value="${f}" ${sel===f?'selected':''}>${f}</option>`).join('')
+    + `<option value="IGNORE" ${sel==='IGNORE'?'selected':''}>IGNORE</option>`
+    + `<option value="OBSTACLE" ${sel==='OBSTACLE'?'selected':''}>OBSTACLE</option>`;
+}
+function buildFamilyTable() {
+  const tbody = document.getElementById('familyBody');
+  tbody.innerHTML = '';
+  DEFAULT_FM.forEach(([name, fam], i) => addFamilyRowWith(name, fam));
+}
+function addFamilyRow() { addFamilyRowWith('', 'IGNORE'); }
+function addFamilyRowWith(name, fam) {
+  const i = Date.now() + Math.random();
+  const tr = document.createElement('tr');
+  tr.id = 'fr_'+i;
+  tr.innerHTML = `
+    <td><input type="text" value="${name}" placeholder="Block name" style="width:100%"></td>
+    <td>
+      <select onchange="refreshTypeTag(this)" style="width:100%">${famOptions(fam)}</select>
+    </td>
+    <td id="ftt_${i}">${famTypeTag(fam)}</td>
+    <td><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>
+  `;
+  document.getElementById('familyBody').appendChild(tr);
+}
+function refreshTypeTag(sel) {
+  const td = sel.closest('tr').querySelector('td:nth-child(3)');
+  td.innerHTML = famTypeTag(sel.value);
+}
+buildFamilyTable();
+
+function getFamilyMap() {
+  const map = {};
+  document.querySelectorAll('#familyBody tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input, select');
+    const name = inputs[0].value.trim();
+    const fam  = inputs[1].value;
+    if(name) map[name] = fam;
+  });
+  return map;
+}
+
+// ─────────────────────────────────────────────
+// PAGE 4 — PRODUCTION TABLE
+// ─────────────────────────────────────────────
+function buildProdTable() {
+  const tbody = document.getElementById('prodBody');
+  tbody.innerHTML = '';
+  DEFAULT_PROD.forEach(([id, fam, rate, active], i) => addProdRowWith(id, fam, rate, active));
+}
+function addProdRow() { addProdRowWith('', 'MECAL', 0, true); }
+function addProdRowWith(id, fam, rate, active) {
+  const k = 'pt_'+Date.now()+Math.random();
+  toggles[k] = active;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" value="${id}" placeholder="Machine ID" style="width:100%"></td>
+    <td>
+      <select style="width:100%">${famOptions(fam)}</select>
+    </td>
+    <td><input type="number" value="${rate}" min="0" step="0.01" style="width:80px"></td>
+    <td style="text-align:center"><button class="toggle-btn ${active?'on':''}" id="${k}" onclick="tog('${k}')"></button></td>
+    <td><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>
+  `;
+  document.getElementById('prodBody').appendChild(tr);
+}
+buildProdTable();
+
+function getProduction() {
+  const prod = {};
+  document.querySelectorAll('#prodBody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('input, select, button.toggle-btn');
+    const id   = cells[0].value.trim();
+    const fam  = cells[1].value;
+    const rate = parseFloat(cells[2].value)||0;
+    const tid  = cells[3].id;
+    const act  = toggles[tid] !== false;
+    if(id && fam && !['IGNORE','OBSTACLE'].includes(fam)) {
+      if(!prod[fam]) prod[fam] = [];
+      prod[fam].push({id, fils_hr:rate, active:act});
+    }
+  });
+  return prod;
+}
+
+// ─────────────────────────────────────────────
+// PAGE 5 — REL TABLE
+// ─────────────────────────────────────────────
+function cellClass(v) {
+  v = parseInt(v);
+  if(v<0) return 'cell-neg';
+  if(v===0) return 'cell-0';
+  if(v<=3) return 'cell-low';
+  if(v<=4) return 'cell-med';
+  if(v<=6) return 'cell-high';
+  return 'cell-must';
+}
+function buildRelTable() {
+  const t = document.getElementById('relTable');
+  const F = FAMILIES;
+  let h = '<thead><tr><th>↓ from / to →</th>';
+  F.forEach(f => { h += `<th>${f.replace('_','<br>')}</th>`; });
+  h += '</tr></thead><tbody>';
+  F.forEach((f1,i) => {
+    h += `<tr><td>${f1}</td>`;
+    F.forEach((f2,j) => {
+      if(j===i){ h += `<td class="cell-diag">—</td>`; return; }
+      if(j<i){
+        const key2 = F[j]+'-'+f1;
+        const k2 = F[i]+'-'+F[j];
+        h += `<td class="cell-diag" style="opacity:0.3">·</td>`;
+        return;
+      }
+      const key = f1+'-'+f2;
+      const v = DEFAULT_REL[key] !== undefined ? DEFAULT_REL[key] : 0;
+      h += `<td class="${cellClass(v)}" id="rtd_${key}">
+        <select id="rel_${key}" onchange="document.getElementById('rtd_${key}').className=cellClass(this.value)">
+          ${[-1,0,1,2,3,4,5,6,7].map(n=>`<option value="${n}"${n===v?' selected':''}>${n}</option>`).join('')}
+        </select>
+      </td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</tbody>';
+  t.innerHTML = h;
+}
+buildRelTable();
+
+function getRelMap() {
+  const out = {};
+  FAMILIES.forEach((f1,i) => {
+    FAMILIES.forEach((f2,j) => {
+      if(j<=i) return;
+      const el = document.getElementById(`rel_${f1}-${f2}`);
+      if(el) out[`${f1}-${f2}`] = parseInt(el.value);
+    });
+  });
+  return out;
+}
+
+// ─────────────────────────────────────────────
+// PAGE 6 — GENERATE
+// ─────────────────────────────────────────────
+function buildGenerate() {
+  const fmap = getFamilyMap();
+  const movable = Object.values(fmap).filter(v=>!['IGNORE','OBSTACLE'].includes(v)).length;
+  const tl = parseInt(document.getElementById('time_limit').value)||21600;
+  const sg = document.getElementById('summaryStats');
+  sg.innerHTML = `
+    <div class="stat-box accent"><div class="sl">Movable machines</div><div class="sv">${movable}</div><div class="ss">will be placed by solver</div></div>
+    <div class="stat-box"><div class="sl">Fixed / ignored</div><div class="sv">${Object.values(fmap).filter(v=>v==='IGNORE').length}</div><div class="ss">never moved</div></div>
+    <div class="stat-box"><div class="sl">Solver time</div><div class="sv">${(tl/3600).toFixed(1)}h</div><div class="ss">${tl} seconds</div></div>
+    <div class="stat-box"><div class="sl">Grid</div><div class="sv">${document.getElementById('grid').value}cm</div><div class="ss">positioning precision</div></div>
+    <div class="stat-box"><div class="sl">Min gap</div><div class="sv">${document.getElementById('min_gap').value}cm</div><div class="ss">machines + poutre</div></div>
+    <div class="stat-box"><div class="sl">Z_FREE targets</div><div class="sv">Top ${document.getElementById('top_n_zfree').value}</div><div class="ss">by interaction score</div></div>
+  `;
+  document.getElementById('codeOut').textContent = generateCode();
+}
+
+function v(id){ return document.getElementById(id).value; }
+
+function generateCode() {
+  const fmap = getFamilyMap();
+  const prod = getProduction();
+  const rmap = getRelMap();
+
+  const fmapLines = Object.entries(fmap).map(([k,val]) => `    "${k}":"${val}",`).join('\n');
+
+  const prodLines = Object.entries(prod).map(([fam, arr]) => {
+    const items = arr.map(m=>`{"id":"${m.id}","fils_hr":${m.fils_hr},"active":${m.active?'True':'False'}}`).join(',');
+    return `    "${fam}":[${items}],`;
+  }).join('\n');
+
+  const relLines = Object.entries(rmap)
+    .filter(([k,val])=>val!==0)
+    .map(([k,val])=>{ const [a,b]=k.split('-'); return `    ("${a}","${b}"):${val},`; })
+    .join('\n');
+
+  const eloparGap = togOn('tog_elopar_touch') ? '0' : v('min_gap');
+
+  return `"""
+=============================================================================
+  FACILITY LAYOUT OPTIMIZER v4 — 3-ZONE STRICT + POUTRE OBSTACLE
+  Generated by Layout Optimizer Config Interface
+  Edit values in the interface, not here. Regenerate when settings change.
+=============================================================================
+"""
+
+import math, copy, time, os
+import pandas as pd
+from ortools.sat.python import cp_model
+
+# =============================================================================
+# PARAMETERS
+# =============================================================================
+OPERATOR_WAGE_MAD_HR = ${v('wage_hr')}
+HOURS_PER_DAY        = ${v('hours_day')}
+DAYS_PER_WEEK        = ${v('days_week')}
+MIN_GAP              = ${v('min_gap')}
+ELOPAR_INTERNAL_GAP  = ${eloparGap}
+GRID                 = ${v('grid')}
+TIME_LIMIT_SEC       = ${v('time_limit')}
+TOP_N_INTO_ZFREE     = ${v('top_n_zfree')}
+ZB_PENALTY_WEIGHT    = ${v('zb_penalty')}
+NUM_WORKERS          = ${v('workers')}
+LS_MAX_PASSES        = ${v('ls_passes')}
+LOG_PROGRESS         = ${togVal('tog_log')}
+CSV_INPUT            = "${v('csv_input')}"
+CSV_OUTPUT           = "${v('csv_output')}"
+
+WEEKLY_WAGE = OPERATOR_WAGE_MAD_HR * HOURS_PER_DAY * DAYS_PER_WEEK
+
+# =============================================================================
+# ZONE DEFINITIONS
+# =============================================================================
+ZA = {"name":"Z_A",    "xmin":${v('za_xmin')},"xmax":${v('za_xmax')},"ymin":${v('za_ymin')},"ymax":${v('za_ymax')}}
+ZF = {"name":"Z_FREE", "xmin":${v('zf_xmin')},"xmax":${v('zf_xmax')},"ymin":${v('zf_ymin')},"ymax":${v('zf_ymax')}}
+ZB = {"name":"Z_B",    "xmin":${v('zb_xmin')},"xmax":${v('zb_xmax')},"ymin":${v('zb_ymin')},"ymax":${v('zb_ymax')}}
+ZONES = [ZA, ZF, ZB]
+
+# =============================================================================
+# POUTRE (structural beam)
+# =============================================================================
+POUTRE = {
+    "name":"poutre",
+    "xmin":${v('p_xmin')}, "xmax":${v('p_xmax')},
+    "ymin":${v('p_ymin')}, "ymax":${v('p_ymax')},
+}
+POUTRE["cx"] = (POUTRE["xmin"]+POUTRE["xmax"])/2
+POUTRE["cy"] = (POUTRE["ymin"]+POUTRE["ymax"])/2
+POUTRE["w"]  =  POUTRE["xmax"]-POUTRE["xmin"]
+POUTRE["h"]  =  POUTRE["ymax"]-POUTRE["ymin"]
+
+# =============================================================================
+# FAMILY MAP
+# =============================================================================
+FAMILY_MAP = {
+${fmapLines}
+}
+
+# =============================================================================
+# PRODUCTION DATA
+# =============================================================================
+PRODUCTION = {
+${prodLines}
+}
+
+# =============================================================================
+# REL CHART (7=must be adjacent, -1=keep apart)
+# =============================================================================
+REL = {
+${relLines}
+}
+
+# =============================================================================
+# FLOW + WEIGHTS
+# =============================================================================
+_FLOW  = {}
+_MFLOW = 1
+
+def _init_flow():
+    global _FLOW, _MFLOW
+    CONNECTED = [
+        ("KAPPA","HANKE"),("KAPPA","SEAL"),("KOMAX","HANKE"),("KOMAX","MECAL"),("KOMAX","SEAL"),
+        ("ELOPAR","RAYCHEM"),("ELOPAR","CONTENTION"),("RAYCHEM","HANKE"),("RAYCHEM","PASSE_FIL"),
+        ("RAYCHEM","CONTENTION"),("DINEFER","RAYCHEM"),("DINEFER","PASSE_FIL"),
+        ("HANKE","ELOPAR"),("HANKE","DINEFER"),("HANKE","CONTENTION"),
+        ("PASSE_FIL","HANKE"),("PASSE_FIL","SEAL"),("MECAL","ELOPAR"),
+        ("MECAL","RAYCHEM"),("MECAL","CONTENTION"),("SEAL","HANKE"),("SEAL","MECAL"),
+        ("BT722","CONTENTION"),("BT752","CONTENTION"),
+    ]
+    def fam_flow(f1,f2):
+        t1 = sum(m["fils_hr"] for m in PRODUCTION.get(f1,[]) if m["active"])
+        t2 = sum(m["fils_hr"] for m in PRODUCTION.get(f2,[]) if m["active"])
+        return (t1+t2)/2
+    _FLOW  = {(f1,f2): fam_flow(f1,f2) for f1,f2 in CONNECTED if f1!=f2}
+    _MFLOW = max(_FLOW.values()) if _FLOW else 1
+
+def _get_rel(f1,f2): return REL.get((f1,f2),REL.get((f2,f1),0))
+def _get_flow(f1,f2): return _FLOW.get((f1,f2),_FLOW.get((f2,f1),0.0))
+def combined_weight(f1,f2):
+    return _get_rel(f1,f2) + (_get_flow(f1,f2)/_MFLOW)*4
+
+ALL_FAMILIES = list(set(FAMILY_MAP.values())-{"IGNORE","OBSTACLE"})
+
+def interaction_score(family):
+    return sum(max(0.0,combined_weight(family,f2)) for f2 in ALL_FAMILIES if f2!=family)
+
+# =============================================================================
+# ZONE HELPERS
+# =============================================================================
+def zone_of(cx,cy):
+    for z in ZONES:
+        if z["xmin"]<=cx<=z["xmax"] and z["ymin"]<=cy<=z["ymax"]: return z["name"]
+    return "OUTSIDE"
+
+def in_zone(m,z):
+    return z["xmin"]<=m["cx"]<=z["xmax"] and z["ymin"]<=m["cy"]<=z["ymax"]
+
+def fits_in_zone(w,h,z,gap=MIN_GAP):
+    return (w+gap)<(z["xmax"]-z["xmin"]) and (h+gap)<(z["ymax"]-z["ymin"])
+
+# =============================================================================
+# LOAD MACHINES
+# =============================================================================
+def load_machines(path):
+    if not os.path.exists(path): raise FileNotFoundError(f"Not found: {path}")
+    df = pd.read_excel(path) if path.endswith(".xlsx") else pd.read_csv(path)
+    df["Name"] = df["Name"].str.strip()
+    if "Center X" in df.columns:
+        df["CenterX"],df["CenterY"] = df["Center X"],df["Center Y"]
+    else:
+        df["CenterX"] = (df["Xmin"]+df["Xmax"])/2
+        df["CenterY"] = (df["Ymin"]+df["Ymax"])/2
+    df["Width"]  = df["Xmax"]-df["Xmin"]
+    df["Height"] = df["Ymax"]-df["Ymin"]
+    df["family"] = df["Name"].map(FAMILY_MAP)
+    unmapped = df[df["family"].isna()]["Name"].tolist()
+    if unmapped: print(f"[WARN] Unmapped (skipped): {unmapped}")
+    df = df.dropna(subset=["family"]).reset_index(drop=True)
+    machines=[]
+    for _,r in df.iterrows():
+        cx,cy=float(r["CenterX"]),float(r["CenterY"])
+        w,h=float(r["Width"]),float(r["Height"])
+        fam=r["family"]
+        fixed=fam in("IGNORE","OBSTACLE")
+        cur_zone=zone_of(cx,cy)
+        machines.append({
+            "name":r["Name"],"family":fam,"cx":cx,"cy":cy,"w":w,"h":h,
+            "rot":float(r.get("Rotation",0)),"fixed":fixed,
+            "in_zb":(cur_zone=="Z_B"),"cur_zone":cur_zone,
+            "can_ZA":fits_in_zone(w,h,ZA),"can_ZF":fits_in_zone(w,h,ZF),
+            "can_ZB":fits_in_zone(w,h,ZB),"zone":cur_zone,
+        })
+    poutre_rows=[m for m in machines if m["name"]=="poutre"]
+    if poutre_rows:
+        p=poutre_rows[0]
+        POUTRE.update({"cx":p["cx"],"cy":p["cy"],"w":p["w"],"h":p["h"],
+            "xmin":p["cx"]-p["w"]/2,"xmax":p["cx"]+p["w"]/2,
+            "ymin":p["cy"]-p["h"]/2,"ymax":p["cy"]+p["h"]/2})
+        print(f"[POUTRE] center ({POUTRE['cx']:.1f},{POUTRE['cy']:.1f}) size {POUTRE['w']:.1f}x{POUTRE['h']:.1f}")
+    movable=[m for m in machines if not m["fixed"]]
+    in_zb_m=[m for m in movable if m["in_zb"]]
+    print(f"\\n[DATA] {len(movable)} movable | {len(in_zb_m)} in Z_B")
+    stuck=[m for m in in_zb_m if not m["can_ZA"] and not m["can_ZF"]]
+    if stuck:
+        print(f"[WARN] Stuck in Z_B: {[m['name'] for m in stuck]}")
+    return machines
+
+# =============================================================================
+# COST FUNCTIONS
+# =============================================================================
+def manhattan(m1,m2): return abs(m1["cx"]-m2["cx"])+abs(m1["cy"]-m2["cy"])
+def layout_cost(machines):
+    c=WEEKLY_WAGE/1e6
+    active=[m for m in machines if not m["fixed"]]
+    n=len(active)
+    return sum(combined_weight(active[i]["family"],active[j]["family"])*manhattan(active[i],active[j])*c
+               for i in range(n) for j in range(i+1,n))
+def edge_gap(m1,m2):
+    gx=abs(m1["cx"]-m2["cx"])-(m1["w"]+m2["w"])/2
+    gy=abs(m1["cy"]-m2["cy"])-(m1["h"]+m2["h"])/2
+    return min(gx,gy)
+def poutre_gap_ok(m):
+    if POUTRE["w"]==0 and POUTRE["h"]==0: return True
+    return edge_gap(m,POUTRE)>=MIN_GAP
+
+# =============================================================================
+# RANK BY INTERACTION
+# =============================================================================
+def rank_by_interaction(machines):
+    scores={m["name"]:interaction_score(m["family"]) for m in machines if not m["fixed"]}
+    ranked=sorted(scores.items(),key=lambda x:-x[1])
+    print("\\n[RANK] Interaction scores:")
+    for name,sc in ranked:
+        fam=next(m["family"] for m in machines if m["name"]==name)
+        print(f"  {name:15s} ({fam:12s}) {sc:.2f}")
+    return [n for n,_ in ranked]
+
+# =============================================================================
+# CP-SAT SOLVER
+# =============================================================================
+def run_cpsat(machines,time_limit=TIME_LIMIT_SEC):
+    movable=[m for m in machines if not m["fixed"]]
+    n=len(movable); G=GRID; t0=time.time()
+    def g(val): return int(round(val/G))
+    ZA_X1,ZA_X2,ZA_Y1,ZA_Y2=g(ZA["xmin"]),g(ZA["xmax"]),g(ZA["ymin"]),g(ZA["ymax"])
+    ZF_X1,ZF_X2,ZF_Y1,ZF_Y2=g(ZF["xmin"]),g(ZF["xmax"]),g(ZF["ymin"]),g(ZF["ymax"])
+    ZB_X1,ZB_X2,ZB_Y1,ZB_Y2=g(ZB["xmin"]),g(ZB["xmax"]),g(ZB["ymin"]),g(ZB["ymax"])
+    X_MIN=min(ZA_X1,ZF_X1,ZB_X1); X_MAX=max(ZA_X2,ZF_X2,ZB_X2)
+    Y_MIN=min(ZA_Y1,ZF_Y1,ZB_Y1); Y_MAX=max(ZA_Y2,ZF_Y2,ZB_Y2)
+    gap_g=math.ceil(MIN_GAP/G)
+    P_HW=math.ceil(POUTRE["w"]/(2*G)); P_HH=math.ceil(POUTRE["h"]/(2*G))
+    P_GX=g(POUTRE["cx"]); P_GY=g(POUTRE["cy"])
+    poutre_defined=(POUTRE["w"]>0 and POUTRE["h"]>0)
+    ranked_names=rank_by_interaction(machines)
+    top_for_zf=[nm for nm in ranked_names
+                if next(m["can_ZF"] for m in movable if m["name"]==nm)][:TOP_N_INTO_ZFREE]
+    top_set=set(top_for_zf)
+    print(f"\\n[ZONES] Z_FREE targets: {list(top_set)}")
+    model=cp_model.CpModel()
+    gx=[model.NewIntVar(X_MIN,X_MAX,f"gx_{i}") for i in range(n)]
+    gy=[model.NewIntVar(Y_MIN,Y_MAX,f"gy_{i}") for i in range(n)]
+    hw=[math.ceil(movable[i]["w"]/(2*G)) for i in range(n)]
+    hh=[math.ceil(movable[i]["h"]/(2*G)) for i in range(n)]
+    bA=[model.NewBoolVar(f"bA_{i}") for i in range(n)]
+    bF=[model.NewBoolVar(f"bF_{i}") for i in range(n)]
+    bB=[model.NewBoolVar(f"bB_{i}") for i in range(n)]
+    for i,m in enumerate(movable):
+        model.Add(bA[i]+bF[i]+bB[i]==1)
+        if not m["can_ZA"]: model.Add(bA[i]==0)
+        if not m["can_ZF"]: model.Add(bF[i]==0)
+        if not m["can_ZB"]: model.Add(bB[i]==0)
+        if m["name"] in top_set: model.Add(bF[i]==1)
+        model.Add(gx[i]>=ZA_X1+hw[i]).OnlyEnforceIf(bA[i])
+        model.Add(gx[i]<=ZA_X2-hw[i]).OnlyEnforceIf(bA[i])
+        model.Add(gy[i]>=ZA_Y1+hh[i]).OnlyEnforceIf(bA[i])
+        model.Add(gy[i]<=ZA_Y2-hh[i]).OnlyEnforceIf(bA[i])
+        model.Add(gx[i]>=ZF_X1+hw[i]).OnlyEnforceIf(bF[i])
+        model.Add(gx[i]<=ZF_X2-hw[i]).OnlyEnforceIf(bF[i])
+        model.Add(gy[i]>=ZF_Y1+hh[i]).OnlyEnforceIf(bF[i])
+        model.Add(gy[i]<=ZF_Y2-hh[i]).OnlyEnforceIf(bF[i])
+        model.Add(gx[i]>=ZB_X1+hw[i]).OnlyEnforceIf(bB[i])
+        model.Add(gx[i]<=ZB_X2-hw[i]).OnlyEnforceIf(bB[i])
+        model.Add(gy[i]>=ZB_Y1+hh[i]).OnlyEnforceIf(bB[i])
+        model.Add(gy[i]<=ZB_Y2-hh[i]).OnlyEnforceIf(bB[i])
+        if poutre_defined:
+            p_xp=model.NewBoolVar(f"p_xp_{i}"); p_xn=model.NewBoolVar(f"p_xn_{i}")
+            p_yp=model.NewBoolVar(f"p_yp_{i}"); p_yn=model.NewBoolVar(f"p_yn_{i}")
+            model.AddBoolOr([p_xp,p_xn,p_yp,p_yn])
+            sep_x=hw[i]+P_HW+gap_g; sep_y=hh[i]+P_HH+gap_g
+            model.Add(gx[i]-P_GX>=sep_x).OnlyEnforceIf(p_xp)
+            model.Add(P_GX-gx[i]>=sep_x).OnlyEnforceIf(p_xn)
+            model.Add(gy[i]-P_GY>=sep_y).OnlyEnforceIf(p_yp)
+            model.Add(P_GY-gy[i]>=sep_y).OnlyEnforceIf(p_yn)
+    elopar_idx=[i for i,m in enumerate(movable) if m["family"]=="ELOPAR"]
+    if len(elopar_idx)>1:
+        ref_x=gx[elopar_idx[0]]
+        for idx in elopar_idx[1:]:
+            model.Add(gx[idx]==ref_x)
+            model.Add(bA[idx]==bA[elopar_idx[0]])
+            model.Add(bF[idx]==bF[elopar_idx[0]])
+            model.Add(bB[idx]==bB[elopar_idx[0]])
+    bt_idx=[i for i,m in enumerate(movable) if m["family"] in("BT722","BT752")]
+    if len(bt_idx)>1:
+        ref_x=gx[bt_idx[0]]
+        for idx in bt_idx[1:]:
+            model.Add(gx[idx]==ref_x)
+            model.Add(bA[idx]==bA[bt_idx[0]])
+            model.Add(bF[idx]==bF[bt_idx[0]])
+            model.Add(bB[idx]==bB[bt_idx[0]])
+    elopar_internal_gap=math.ceil(ELOPAR_INTERNAL_GAP/G)
+    for i in range(n):
+        for j in range(i+1,n):
+            fi=movable[i]["family"]; fj=movable[j]["family"]
+            gap=elopar_internal_gap if(fi=="ELOPAR" and fj=="ELOPAR") else gap_g
+            min_dx=hw[i]+hw[j]+gap; min_dy=hh[i]+hh[j]+gap
+            b_xp=model.NewBoolVar(f"xp_{i}_{j}"); b_xn=model.NewBoolVar(f"xn_{i}_{j}")
+            b_yp=model.NewBoolVar(f"yp_{i}_{j}"); b_yn=model.NewBoolVar(f"yn_{i}_{j}")
+            model.AddBoolOr([b_xp,b_xn,b_yp,b_yn])
+            model.Add(gx[i]-gx[j]>=min_dx).OnlyEnforceIf(b_xp)
+            model.Add(gx[j]-gx[i]>=min_dx).OnlyEnforceIf(b_xn)
+            model.Add(gy[i]-gy[j]>=min_dy).OnlyEnforceIf(b_yp)
+            model.Add(gy[j]-gy[i]>=min_dy).OnlyEnforceIf(b_yn)
+    obj=[]
+    for i in range(n):
+        for j in range(i+1,n):
+            w_raw=combined_weight(movable[i]["family"],movable[j]["family"])
+            if abs(w_raw)<0.01: continue
+            w_int=int(round(abs(w_raw)*100))
+            dx=model.NewIntVar(0,X_MAX-X_MIN,f"dx_{i}_{j}")
+            dy=model.NewIntVar(0,Y_MAX-Y_MIN,f"dy_{i}_{j}")
+            dfx=model.NewIntVar(X_MIN-X_MAX,X_MAX-X_MIN,f"dfx_{i}_{j}")
+            dfy=model.NewIntVar(Y_MIN-Y_MAX,Y_MAX-Y_MIN,f"dfy_{i}_{j}")
+            model.Add(dfx==gx[i]-gx[j]); model.Add(dfy==gy[i]-gy[j])
+            model.AddAbsEquality(dx,dfx); model.AddAbsEquality(dy,dfy)
+            obj.append(w_int*(dx+dy))
+    for i,m in enumerate(movable):
+        if m["in_zb"]: obj.append(ZB_PENALTY_WEIGHT*bB[i])
+    model.Minimize(sum(obj))
+    for i,m in enumerate(movable):
+        model.AddHint(gx[i],g(m["cx"])); model.AddHint(gy[i],g(m["cy"]))
+        cur=m["cur_zone"]
+        if cur=="Z_A" and m["can_ZA"]: model.AddHint(bA[i],1)
+        elif cur=="Z_FREE" and m["can_ZF"]: model.AddHint(bF[i],1)
+        else: model.AddHint(bB[i],1)
+    solver=cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds=time_limit
+    solver.parameters.num_search_workers=NUM_WORKERS
+    solver.parameters.log_search_progress=LOG_PROGRESS
+    print(f"\\n[CP-SAT] {n} machines | Grid:{G}cm | Gap:{MIN_GAP}cm | Limit:{time_limit}s...")
+    status=solver.Solve(model)
+    if status in(cp_model.OPTIMAL,cp_model.FEASIBLE):
+        lbl="OPTIMAL" if status==cp_model.OPTIMAL else "FEASIBLE"
+        print(f"[CP-SAT] {lbl} | {time.time()-t0:.1f}s | Obj:{solver.ObjectiveValue():.0f}")
+        result=copy.deepcopy(machines); idx=0
+        for m in result:
+            if not m["fixed"]:
+                m["cx"]=solver.Value(gx[idx])*G; m["cy"]=solver.Value(gy[idx])*G
+                if solver.Value(bA[idx]): m["zone"]="Z_A"
+                elif solver.Value(bF[idx]): m["zone"]="Z_FREE"
+                else: m["zone"]="Z_B"
+                idx+=1
+        return result,solver.ObjectiveValue()
+    else:
+        print("[CP-SAT] INFEASIBLE — reduce TOP_N_INTO_ZFREE and retry")
+        return machines,float("inf")
+
+# =============================================================================
+# LOCAL SEARCH POLISH
+# =============================================================================
+def local_search_polish(machines,max_passes=LS_MAX_PASSES):
+    if max_passes==0: return machines,layout_cost(machines)
+    print(f"\\n[LS] Pairwise swaps (max {max_passes} passes)...")
+    best=copy.deepcopy(machines); best_cost=layout_cost(best)
+    idx=[i for i,m in enumerate(best) if not m["fixed"]]; n=len(idx)
+    for p in range(max_passes):
+        improved=False
+        for ii in range(n):
+            for jj in range(ii+1,n):
+                i,j=idx[ii],idx[jj]
+                if best[i].get("zone","Z_B")!=best[j].get("zone","Z_B"): continue
+                best[i]["cx"],best[j]["cx"]=best[j]["cx"],best[i]["cx"]
+                best[i]["cy"],best[j]["cy"]=best[j]["cy"],best[i]["cy"]
+                gap_ok=(all(edge_gap(best[i],best[k])>=MIN_GAP and
+                            edge_gap(best[j],best[k])>=MIN_GAP
+                            for k in range(len(best)) if k!=i and k!=j)
+                        and poutre_gap_ok(best[i]) and poutre_gap_ok(best[j]))
+                if gap_ok:
+                    nc=layout_cost(best)
+                    if nc<best_cost: best_cost=nc; improved=True; continue
+                best[i]["cx"],best[j]["cx"]=best[j]["cx"],best[i]["cx"]
+                best[i]["cy"],best[j]["cy"]=best[j]["cy"],best[i]["cy"]
+        if not improved:
+            print(f"[LS] Converged pass {p+1} | Cost:{best_cost:.4f}"); break
+    return best,best_cost
+
+# =============================================================================
+# EXPORT
+# =============================================================================
+def export(machines,original,path):
+    orig_map={m["name"]:m for m in original}
+    rows=[]
+    for m in machines:
+        o=orig_map.get(m["name"],m)
+        rows.append({
+            "Name":m["name"],"Family":m["family"],
+            "OldCX":round(o["cx"],2),"OldCY":round(o["cy"],2),
+            "NewCX":round(m["cx"],2),"NewCY":round(m["cy"],2),
+            "DeltaX":round(m["cx"]-o["cx"],2),"DeltaY":round(m["cy"]-o["cy"],2),
+            "Width":round(m["w"],2),"Height":round(m["h"],2),
+            "Rotation":round(m["rot"],2),
+            "Zone":m.get("zone","FIXED"),
+            "InZA":"YES" if in_zone(m,ZA) else "no",
+            "InZFree":"YES" if in_zone(m,ZF) else "no",
+            "InZB":"YES" if in_zone(m,ZB) else "no",
+        })
+    df=pd.DataFrame(rows); df.to_csv(path,index=False)
+    print(f"\\n[OUT] Saved → {path}")
+    mob=df[df["Family"].isin(ALL_FAMILIES)]
+    print(f"  Z_A  : {len(mob[mob['InZA']=='YES']):2d} → {mob[mob['InZA']=='YES']['Name'].tolist()}")
+    print(f"  Z_FREE:{len(mob[mob['InZFree']=='YES']):2d} → {mob[mob['InZFree']=='YES']['Name'].tolist()}")
+    print(f"  Z_B  : {len(mob[mob['InZB']=='YES']):2d} → {mob[mob['InZB']=='YES']['Name'].tolist()}")
+    out=mob[(mob["InZA"]=="no")&(mob["InZFree"]=="no")&(mob["InZB"]=="no")]
+    if len(out): print(f"  OUTSIDE: {out['Name'].tolist()} ← PROBLEM")
+    else: print("  All machines placed inside zones")
+    if POUTRE["w"]>0:
+        viols=[m for m in machines if not m["fixed"] and m["family"] not in("IGNORE","OBSTACLE") and edge_gap(m,POUTRE)<MIN_GAP]
+        if viols: print(f"  POUTRE VIOLATIONS: {[m['name'] for m in viols]}")
+        else: print(f"  Poutre gap ok for all machines")
+
+# =============================================================================
+# REPORT
+# =============================================================================
+def report(before,after,cb,ca):
+    pct=(cb-ca)/abs(cb)*100 if cb else 0
+    print("\\n"+"="*60)
+    print(f"  Initial cost   : {cb:.4f} MAD·cm/week")
+    print(f"  Optimized cost : {ca:.4f} MAD·cm/week")
+    print(f"  Improvement    : {pct:.1f}%")
+    moves=sorted([(m["name"],math.hypot(m["cx"]-b["cx"],m["cy"]-b["cy"]))
+                  for m,b in zip(after,before) if not m["fixed"]],key=lambda x:-x[1])
+    print("  TOP 5 MOVES:")
+    for name,d in moves[:5]: print(f"    {name:20s}  {d:8.1f} cm")
+    print("="*60)
+
+# =============================================================================
+# MAIN
+# =============================================================================
+if __name__=="__main__":
+    _init_flow()
+    machines=load_machines(CSV_INPUT)
+    original=copy.deepcopy(machines)
+    cost_before=layout_cost(machines)
+    in_zb_n=sum(1 for m in machines if not m["fixed"] and m["in_zb"])
+    print(f"\\n[START] Cost:{cost_before:.4f} | {in_zb_n} machines in Z_B")
+    cpsat_result,_=run_cpsat(machines,TIME_LIMIT_SEC)
+    final_result,cost_after=local_search_polish(cpsat_result)
+    export(final_result,original,CSV_OUTPUT)
+    report(original,final_result,cost_before,cost_after)
+    print(f"\\nDone! Feed '{CSV_OUTPUT}' into AutoCAD with APPLYLAYOUT_v2.lsp")
+`;
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('codeOut').textContent)
+    .then(() => {
+      const btn = event.target.closest('button');
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg class="icon" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+      setTimeout(() => btn.innerHTML = orig, 1800);
+    });
+}
+
+function downloadScript() {
+  const code = document.getElementById('codeOut').textContent;
+  const blob = new Blob([code], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'CP_SAT_3ZONE_v4.py';
+  a.click();
+}
+</script>
+</body>
+</html>
